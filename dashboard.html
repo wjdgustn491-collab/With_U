@@ -81,7 +81,7 @@
     const { useState, useEffect, useMemo } = React;
     const { 
       ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
-      BarChart, Bar, Cell, PieChart, Pie, Legend, RadialBarChart, RadialBar 
+      BarChart, Bar, Cell, PieChart, Pie
     } = Recharts;
 
     // Direct SVG React components for Lucide icons to eliminate loading lag or CDN errors
@@ -113,34 +113,6 @@
       </svg>
     );
 
-    const ZapIcon = (props) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-      </svg>
-    );
-
-    const FlameIcon = (props) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
-      </svg>
-    );
-
-    const LeafIcon = (props) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 9.8A7 7 0 0 1 11 20z" />
-        <path d="M19 2c-2.26 4.33-5.27 7.14-8 10" />
-      </svg>
-    );
-
-    const RefreshCwIcon = (props) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-        <path d="M16 3h5v5" />
-        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-        <path d="M8 21H3v-5" />
-      </svg>
-    );
-
     const DatabaseIcon = (props) => (
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
         <ellipse cx="12" cy="5" rx="9" ry="3" />
@@ -160,6 +132,47 @@
     const ChevronRightIcon = (props) => (
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
         <path d="m9 18 6-6-6-6" />
+      </svg>
+    );
+
+    const SearchIcon = (props) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
+      </svg>
+    );
+
+    const ShieldCheckIcon = (props) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        <path d="m9 11 2 2 4-4" />
+      </svg>
+    );
+
+    const RefreshCwIcon = (props) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+        <path d="M16 3h5v5" />
+        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+        <path d="M8 21H3v-5" />
+      </svg>
+    );
+
+    const InfoIcon = (props) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 16v-4" />
+        <path d="M12 8h.01" />
+      </svg>
+    );
+
+    const FileTextIcon = (props) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+        <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+        <path d="M10 9H8" />
+        <path d="M16 13H8" />
+        <path d="M16 17H8" />
       </svg>
     );
 
@@ -195,31 +208,10 @@
       // Interactive selected tree details
       const [selectedTree, setSelectedTree] = useState(treeSpeciesData[0]);
 
-      // Interactive Net-Zero Goal Milestones
-      const [milestones, setMilestones] = useState([
-        { id: 1, label: "5kW 주택용 태양광 발전기 설치", points: 8, checked: true },
-        { id: 2, label: "전기자동차(EV)로 전환 완료", points: 12, checked: true },
-        { id: 3, label: "친환경 주택 단열재 전면 보강", points: 5, checked: false },
-        { id: 4, label: "음식물 및 유기 폐기물 퇴비화", points: 4, checked: true },
-        { id: 5, label: "자생종 나무 15그루 식재", points: 6, checked: false },
-      ]);
-
-      // Calculate Net-Zero completion dynamically based on checklist and calculator results
-      const netZeroBasePercent = 45; // Base efficiency
-      const netZeroProgress = useMemo(() => {
-        const checkedPoints = milestones
-          .filter(m => m.checked)
-          .reduce((sum, item) => sum + item.points, 0);
-        
-        // Add variable adjustment based on calculator's emission levels (lower emissions = higher progress)
-        let calculatorBonus = 10;
-        if (calculatedFootprint) {
-          const totalKg = parseFloat(calculatedFootprint.total);
-          if (totalKg < 200) calculatorBonus = 15;
-          else if (totalKg > 400) calculatorBonus = 5;
-        }
-        return Math.min(netZeroBasePercent + checkedPoints + calculatorBonus, 100);
-      }, [milestones, calculatedFootprint]);
+      // Certificate Verification state (Module 6 - Widescreen)
+      const [certNumber, setCertNumber] = useState("K-ETS-2026");
+      const [isValidating, setIsValidating] = useState(false);
+      const [verificationResult, setVerificationResult] = useState(null);
 
       // Handle Manual / Auto-Sync switch trigger
       useEffect(() => {
@@ -253,9 +245,25 @@
         handleCalculate();
       }, [electricity, gas]);
 
-      // Toggle milestone state
-      const toggleMilestone = (id) => {
-        setMilestones(prev => prev.map(m => m.id === id ? { ...m, checked: !m.checked } : m));
+      // Handle Certificate Verification API Sync
+      const handleVerifyCertificate = (e) => {
+        if (e) e.preventDefault();
+        if (!certNumber.trim()) return;
+
+        setIsValidating(true);
+        setVerificationResult(null);
+
+        setTimeout(() => {
+          setIsValidating(false);
+          setVerificationResult({
+            id: certNumber.toUpperCase(),
+            status: "유효함 (Verified)",
+            issuer: "한국환경산업기술원 (KEITI)",
+            offset: "500 tCO2eq",
+            date: "2026-07-01",
+            hash: "sha256:7f49c0d3a5e89d1b2f4c6e9a8f278065bde89a"
+          });
+        }, 1500);
       };
 
       // PieChart emission data based dynamically on calculator values
@@ -274,9 +282,6 @@
         return emissionSourcesData.reduce((sum, d) => sum + d.value, 0).toFixed(0);
       }, [emissionSourcesData]);
 
-      // Radial progress chart config
-      const progressChartData = [{ name: "Progress", value: netZeroProgress, fill: "url(#radialGreen)" }];
-
       return (
         <div className="max-w-[1400px] mx-auto p-4 md:p-6 lg:p-8 space-y-6">
           
@@ -285,14 +290,14 @@
             <div>
               <div className="flex items-center gap-2">
                 <span className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">
-                  <LeafIcon className="w-6 h-6 animate-pulse" />
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 animate-pulse"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 9.8A7 7 0 0 1 11 20z" /><path d="M19 2c-2.26 4.33-5.27 7.14-8 10" /></svg>
                 </span>
                 <h1 className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-emerald-400 via-emerald-300 to-sky-400 bg-clip-text text-transparent">
                   EcoPulse 통합 관제
                 </h1>
               </div>
               <p className="text-slate-400 text-sm md:text-base mt-1">
-                통합 환경 영향 분석, 탄소 흡수 수종 분석 및 핵심 KPI 대시보드
+                통합 환경 영향 분석, 탄소 흡수 수종 분석 및 공식 인증서 검증 대시보드
               </p>
             </div>
             
@@ -301,16 +306,16 @@
               <span className="text-xs font-semibold bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-500/20">
                 실시간 서버 연동 완료
               </span>
-              <span className="text-slate-400 text-xs hidden sm:inline">
-                2026년 7월 1일
+              <span className="text-slate-400 text-xs hidden sm:inline font-bold">
+                2026년 7월 6일
               </span>
             </div>
           </header>
 
-          {/* Bento-style CSS Grid */}
+          {/* Bento-style CSS Grid (Exactly 6 Modules Layout) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
-            {/* 1. Main Overview: Input vs Output Chart (Spans 2 columns on desktop) */}
+            {/* 1. 실시간 밸런스 (Spans 2 columns on desktop) */}
             <section className="col-span-1 md:col-span-2 bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 p-6 rounded-2xl flex flex-col justify-between hover:border-emerald-500/20 transition-all duration-300 shadow-xl shadow-black/30">
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -360,14 +365,14 @@
 
               {/* Dynamic status footer inside chart */}
               <div className="mt-4 pt-4 border-t border-slate-800/80 flex justify-between items-center text-xs">
-                <p className="text-slate-400">배출 균형 추이: 최근 6개월 동안 <span className="text-emerald-400 font-semibold">순 CO2eq 14.2% 감축</span> 달성 중</p>
+                <p className="text-slate-400 font-semibold">배출 균형 추이: 최근 6개월 동안 <span className="text-emerald-400">순 CO2eq 14.2% 감축</span> 달성 중</p>
                 <a href="#" className="text-emerald-400 font-semibold hover:underline flex items-center gap-0.5">
                   상세 분석 리포트 <ChevronRightIcon className="w-3.5 h-3.5" />
                 </a>
               </div>
             </section>
 
-            {/* 2. Multi-Footprint Metrics (4 Mini KPI cards inside a 2x2 Grid) */}
+            {/* 2. 다중 발자국 지표 (KPI Cards) */}
             <section className="col-span-1 bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 p-6 rounded-2xl flex flex-col justify-between hover:border-emerald-500/20 transition-all duration-300 shadow-xl shadow-black/30">
               <div className="mb-4">
                 <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
@@ -445,7 +450,7 @@
               </div>
             </section>
 
-            {/* 3. Energy Emission Calculator & KEPCO API Hub */}
+            {/* 3. 한전 KEPCO 에너지 계산기 */}
             <section className="col-span-1 bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 p-6 rounded-2xl flex flex-col justify-between hover:border-emerald-500/20 transition-all duration-300 shadow-xl shadow-black/30">
               <div>
                 <div className="flex justify-between items-start mb-4">
@@ -462,7 +467,7 @@
 
                 {/* API Toggle Switch */}
                 <div className="flex items-center justify-between p-2.5 bg-slate-950/45 rounded-xl border border-slate-800/80 mb-4">
-                  <span className="text-xs font-semibold text-slate-300">
+                  <span className="text-xs font-semibold text-slate-300 font-medium">
                     {isAutoSync ? "한전 스마트미터 실시간 연동" : "수동 에너지 소비량 직접 입력"}
                   </span>
                   
@@ -480,7 +485,7 @@
                 <form onSubmit={handleCalculate} className="space-y-3">
                   <div>
                     <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                      전력 소비량 (Electricity)
+                      전력 소비량
                     </label>
                     <div className="relative">
                       <input 
@@ -497,7 +502,7 @@
 
                   <div>
                     <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                      도시가스 사용량 (Gas)
+                      도시가스 사용량
                     </label>
                     <div className="relative">
                       <input 
@@ -530,7 +535,7 @@
                         {calculatedFootprint.total} <span className="text-xs font-semibold text-slate-400">kg CO2eq</span>
                       </p>
                     </div>
-                    <div className="text-right text-[10px] text-slate-500">
+                    <div className="text-right text-[10px] text-slate-500 font-bold">
                       <p>전력: {calculatedFootprint.electricity} kg</p>
                       <p>가스: {calculatedFootprint.gas} kg</p>
                     </div>
@@ -539,7 +544,7 @@
               )}
             </section>
 
-            {/* 4. Tree Species Sequestration Analysis */}
+            {/* 4. 수종별 탄소 흡수량 (BarChart) */}
             <section className="col-span-1 bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 p-6 rounded-2xl flex flex-col justify-between hover:border-emerald-500/20 transition-all duration-300 shadow-xl shadow-black/30">
               <div>
                 <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
@@ -608,12 +613,12 @@
                       연간 {selectedTree.co2}kg 흡수
                     </span>
                   </h4>
-                  <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">{selectedTree.desc}</p>
+                  <p className="text-[10px] text-slate-400 mt-1 leading-relaxed font-medium">{selectedTree.desc}</p>
                 </div>
               </div>
             </section>
 
-            {/* 5. Emission Sources Breakdown */}
+            {/* 5. 배출원 분석 (DonutChart) */}
             <section className="col-span-1 bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 p-6 rounded-2xl flex flex-col justify-between hover:border-emerald-500/20 transition-all duration-300 shadow-xl shadow-black/30">
               <div>
                 <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
@@ -656,114 +661,141 @@
                 {emissionSourcesData.map((entry, idx) => (
                   <div key={entry.name} className="flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full" style={{ backgroundColor: EMISSION_COLORS[idx] }}></span>
-                    <span className="text-slate-400">{entry.name}:</span>
+                    <span className="text-slate-400 font-medium">{entry.name}:</span>
                     <span className="font-bold text-white ml-auto">{entry.value.toFixed(0)} kg</span>
                   </div>
                 ))}
               </div>
             </section>
 
-            {/* 6. Net-Zero Goal Tracking (Full 3 Columns Layout in Bento Grid) */}
+            {/* 6. 공식 탄소 인증서 검증 (Spans all 3 columns on desktop for premium widescreen layout) */}
             <section className="col-span-1 md:col-span-2 lg:col-span-3 bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 p-6 rounded-2xl hover:border-emerald-500/20 transition-all duration-300 shadow-xl shadow-black/30">
               <div className="flex flex-col lg:flex-row justify-between items-stretch gap-6">
                 
-                {/* Goal Header and Gauge */}
-                <div className="flex-1 flex flex-col sm:flex-row items-center gap-6 border-b lg:border-b-0 lg:border-r border-slate-800/80 pb-6 lg:pb-0 lg:pr-6">
-                  
-                  {/* Radial progress gauge */}
-                  <div className="relative w-40 h-40 flex items-center justify-center shrink-0">
-                    <div className="absolute flex flex-col items-center">
-                      <span className="text-[26px] font-extrabold text-white">{netZeroProgress}%</span>
-                      <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">달성 완료</span>
+                {/* Left Side: Verification search inputs and descriptors (1/3 Width) */}
+                <div className="flex-1 lg:max-w-sm flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-800/80 pb-6 lg:pb-0 lg:pr-6">
+                  <div>
+                    <div className="flex justify-between items-start mb-2">
+                      <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                        공식 인증서 검증 (KEITI / KCCI)
+                      </h2>
+                      
+                      {/* Active Status Badge */}
+                      <div className="flex items-center gap-1.5 text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                        API 연결됨 (Live)
+                      </div>
                     </div>
-
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RadialBarChart 
-                        cx="50%" 
-                        cy="50%" 
-                        innerRadius="80%" 
-                        outerRadius="100%" 
-                        barSize={8} 
-                        data={progressChartData} 
-                        startAngle={90} 
-                        endAngle={-270}
-                      >
-                        <defs>
-                          <linearGradient id="radialGreen" x1="0" y1="0" x2="1" y2="0">
-                            <stop offset="0%" stopColor="#10b981" />
-                            <stop offset="100%" stopColor="#0ea5e9" />
-                          </linearGradient>
-                        </defs>
-                        <RadialBar 
-                          minAngle={15} 
-                          background={{ fill: '#1e293b' }} 
-                          clockWise 
-                          dataKey="value" 
-                          cornerRadius={4}
-                        />
-                      </RadialBarChart>
-                    </ResponsiveContainer>
-                  </div>
-
-                  {/* Message and info */}
-                  <div className="text-center sm:text-left space-y-2">
-                    <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-bold rounded-full border border-emerald-500/20">
-                      목표: 2030년까지 넷제로(Net-Zero) 달성
-                    </span>
-                    <h3 className="text-xl font-extrabold text-slate-100 pt-1">
-                      탄소 중립 달성 진척도 현황
-                    </h3>
-                    <p className="text-xs text-slate-400 leading-relaxed max-w-md font-medium">
-                      현재 매우 우수한 친환경 친화 등급에 위치해 있습니다! 전력 소비량을 피크 타임에 조절하고, 탄소 흡수 수종 식재 및 마일스톤 확장을 통해 탄소 배출량을 더욱 억제해 주세요.
+                    <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                      국가 탄소배출권 등록소(K-ETS) 및 대한상공회의소(KCCI) 탄소감축인증센터의 공식 DB와 실시간 연동되어 인증서 신뢰성을 판정합니다.
                     </p>
-                    <div className="flex flex-wrap gap-4 text-xs font-semibold text-slate-300 pt-1 justify-center sm:justify-start">
-                      <div className="flex items-center gap-1.5">
-                        <span className="p-0.5 bg-emerald-500/10 text-emerald-400 rounded">
-                          <LeafIcon className="w-3.5 h-3.5" />
+                  </div>
+
+                  {/* Verification Input & Action Form */}
+                  <form onSubmit={handleVerifyCertificate} className="space-y-3 mt-4">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                        인증서 일련번호
+                      </label>
+                      <div className="relative">
+                        <input 
+                          type="text"
+                          value={certNumber}
+                          onChange={(e) => setCertNumber(e.target.value)}
+                          className="w-full bg-slate-950/60 border border-slate-800/80 rounded-xl pl-9 pr-4 py-2.5 text-xs font-semibold text-white focus:outline-none focus:border-emerald-500/60 transition-colors"
+                          placeholder="일련번호 입력 (예: K-ETS-2026)"
+                        />
+                        <span className="absolute left-3.5 top-3 text-slate-500">
+                          <SearchIcon className="w-4 h-4" />
                         </span>
-                        <span>탄소 12% 추가 절감 필요</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="p-0.5 bg-sky-500/10 text-sky-400 rounded">
-                          <WindIcon className="w-3.5 h-3.5" />
-                        </span>
-                        <span>탄소 상쇄량 +25kg 이상 유지</span>
                       </div>
                     </div>
-                  </div>
+
+                    <button 
+                      type="submit"
+                      disabled={isValidating}
+                      className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-slate-950 text-xs font-extrabold rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-1.5"
+                    >
+                      {isValidating ? (
+                        <>
+                          <RefreshCwIcon className="w-3.5 h-3.5 animate-spin" />
+                          조회 중...
+                        </>
+                      ) : "API로 검증하기"}
+                    </button>
+                  </form>
                 </div>
 
-                {/* Milestone reduction checklist (Interactive!) */}
-                <div className="flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-300 mb-3 flex items-center gap-2">
-                      <span>탄소 감축 및 상쇄 마일스톤</span>
-                      <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full ml-auto">
-                        실시간 목표치 변동 반영
-                      </span>
-                    </h3>
-                    <div className="space-y-2.5">
-                      {milestones.map((m) => (
-                        <label 
-                          key={m.id}
-                          className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all duration-300 cursor-pointer ${m.checked ? 'bg-emerald-950/20 border-emerald-500/20 hover:border-emerald-500/30' : 'bg-slate-950/40 border-slate-900 hover:border-slate-800'}`}
-                        >
-                          <input 
-                            type="checkbox" 
-                            checked={m.checked}
-                            onChange={() => toggleMilestone(m.id)}
-                            className="h-4 w-4 rounded border-slate-800 text-emerald-500 focus:ring-emerald-500/50 bg-slate-950 accent-emerald-500"
-                          />
-                          <span className={`text-xs font-medium transition-colors ${m.checked ? 'text-slate-200 line-through decoration-slate-600' : 'text-slate-400'}`}>
-                            {m.label}
-                          </span>
-                          <span className="text-[9px] font-bold text-slate-500 ml-auto uppercase tracking-wider">
-                            진척도 +{m.points}% 기여
-                          </span>
-                        </label>
-                      ))}
+                {/* Right Side: Interactive Official Verification Stamp & Credentials Card (2/3 Width) */}
+                <div className="flex-1 flex items-center justify-center min-h-[160px]">
+                  {isValidating ? (
+                    <div className="text-center space-y-2">
+                      <RefreshCwIcon className="w-8 h-8 text-sky-400 animate-spin mx-auto" />
+                      <p className="text-xs text-slate-400 font-bold animate-pulse">KEITI DB에서 일련번호 검증 데이터 로드 중...</p>
                     </div>
-                  </div>
+                  ) : verificationResult ? (
+                    /* Widescreen Certificate Panel */
+                    <div className="w-full bg-emerald-950/10 border border-emerald-500/20 rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between h-full min-h-[180px]">
+                      
+                      {/* Technical seal background watermark */}
+                      <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-[0.03] text-emerald-400 pointer-events-none">
+                        <ShieldCheckIcon className="w-48 h-48" />
+                      </div>
+
+                      {/* Header block of verified cert */}
+                      <div className="flex justify-between items-start border-b border-emerald-500/10 pb-3">
+                        <div className="flex items-center gap-2.5">
+                          <span className="p-2 bg-emerald-500/15 text-emerald-400 rounded-xl">
+                            <ShieldCheckIcon className="w-5 h-5" />
+                          </span>
+                          <div>
+                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">검증 성공</span>
+                            <h3 className="text-sm font-black text-emerald-400 mt-0.5 leading-none">
+                              {verificationResult.status}
+                            </h3>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[9px] text-emerald-300 font-bold bg-emerald-500/15 border border-emerald-500/20 px-2.5 py-1 rounded-md">
+                            {verificationResult.id}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Grid Body */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-3.5 text-xs text-slate-300">
+                        <div>
+                          <p className="text-[9px] text-slate-500 font-bold">공식 발행기관</p>
+                          <p className="font-bold text-slate-200 mt-0.5">{verificationResult.issuer}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-slate-500 font-bold">인증된 탄소 상쇄량</p>
+                          <p className="font-black text-emerald-400 mt-0.5 text-sm">{verificationResult.offset}</p>
+                        </div>
+                        <div className="col-span-2 sm:col-span-1">
+                          <p className="text-[9px] text-slate-500 font-bold">전자서명 보안 해시</p>
+                          <p className="font-mono text-[9px] text-slate-400 mt-1 truncate max-w-[150px]">{verificationResult.hash}</p>
+                        </div>
+                      </div>
+
+                      {/* Footer block */}
+                      <div className="border-t border-emerald-500/5 pt-3 mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-[10px]">
+                        <span className="text-slate-500 font-semibold">검증 일자: {verificationResult.date}</span>
+                        <a href="#" className="text-emerald-400 hover:text-emerald-300 font-bold hover:underline flex items-center gap-1">
+                          <FileTextIcon className="w-3.5 h-3.5" />
+                          디지털 원본 증명서 다운로드 &rarr;
+                        </a>
+                      </div>
+
+                    </div>
+                  ) : (
+                    /* Initial Placeholder state */
+                    <div className="text-center text-slate-500 text-xs py-8 border border-dashed border-slate-800/80 rounded-2xl w-full flex flex-col items-center justify-center gap-2 bg-slate-950/20">
+                      <InfoIcon className="w-6 h-6 opacity-30 text-slate-400 animate-pulse" />
+                      <p className="font-semibold text-slate-400">인증서 일련번호를 입력하고 조회를 진행해 주세요.</p>
+                      <p className="text-[10px] text-slate-600">KEITI / KCCI 데이터베이스와 매칭됩니다.</p>
+                    </div>
+                  )}
                 </div>
 
               </div>
