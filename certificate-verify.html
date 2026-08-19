@@ -140,6 +140,12 @@
   .vm-row dt{font-size:12.5px; color:var(--muted); flex-shrink:0}
   .vm-row dd{margin:0; font-size:13.5px; font-weight:600; color:var(--text); text-align:right}
   .vm-row dd.ok{color:var(--green)}
+  .vm-row dd.bad{color:#dc2626; font-weight:600}
+  /* 미연결·오류 상태에서는 표시등과 배지를 초록에서 내린다 (거짓 Live 방지) */
+  .vm-status[data-state="off"] strong{color:#b45309}
+  .vm-status[data-state="off"] .vm-dot{background:#b45309; animation:none}
+  .vm-result[data-verdict="bad"] .vm-seal{background:#dc2626}
+  .vm-note a{color:inherit}
   .vm-row dd.amount{font-size:16px; color:var(--navy); letter-spacing:-.02em}
   .vm-row dd.amount em{font-style:normal; font-size:12px; color:var(--muted); font-weight:500; margin-left:3px}
   .vm-row dd.mono{font-family:ui-monospace,"SFMono-Regular",Consolas,monospace; font-weight:500; font-size:13px}
@@ -165,20 +171,20 @@
 <section class="vm">
   <header class="vm-head">
     <div>
-      <h2 class="vm-title">공식 인증서 검증 <span class="vm-badge">DEMO</span></h2>
-      <p class="vm-sub">KEITI / KCCI 인증 데이터 연계</p>
+      <h2 class="vm-title">공식 인증서 검증 <span class="vm-badge" id="vmBadge">확인 중</span></h2>
+      <p class="vm-sub">한국환경산업기술원(KEITI) 환경표지인증 공식 데이터</p>
     </div>
-    <div class="vm-status" role="status" aria-label="API 상태 연결됨">
+    <div class="vm-status" role="status" id="vmStatus">
       <span class="vm-dot" aria-hidden="true"></span>
-      <span>API 상태: <strong>연결됨 (Live)</strong></span>
+      <span>API 상태: <strong id="vmStatusText">확인 중...</strong></span>
     </div>
   </header>
 
   <div class="vm-body">
     <form id="vmForm" novalidate>
-      <label class="vm-label" for="vmSerial">인증서 일련번호</label>
+      <label class="vm-label" for="vmSerial">인증번호 또는 인증제품명</label>
       <div class="vm-field">
-        <input class="vm-input" id="vmSerial" type="text" placeholder="예: K-ETS-2026"
+        <input class="vm-input" id="vmSerial" type="text" placeholder="예: EL245 / 재활용 화장지"
                autocomplete="off" spellcheck="false" aria-describedby="vmHint">
         <button class="vm-btn" id="vmBtn" type="submit">API로 검증하기</button>
       </div>
@@ -188,7 +194,11 @@
     <div id="vmOut" aria-live="polite" aria-busy="false"></div>
   </div>
 
-  <p class="vm-note">※ 본 화면은 시연용 목업입니다. 표시되는 인증 정보는 실제 KEITI 조회 결과가 아닙니다.</p>
+  <p class="vm-note">
+    ※ 조회 대상: 한국환경산업기술원 <strong>환경표지인증 해지·취소 제품</strong> 공식 오픈API
+    (<a href="https://www.data.go.kr/data/15158373/openapi.do" target="_blank" rel="noopener">공공데이터포털</a>).
+    해지·취소 이력이 없음을 확인하는 방식이며, 인증의 최초 발급 사실 자체를 증명하지는 않습니다.
+  </p>
 </section>
 
 <script>
@@ -201,36 +211,51 @@
   var hint  = document.getElementById('vmHint');
   var out   = document.getElementById('vmOut');
 
-  var LATENCY = 1500; // 로딩 체감 시간(ms)
+  var badge      = document.getElementById('vmBadge');
+  var statusEl   = document.getElementById('vmStatus');
+  var statusText = document.getElementById('vmStatusText');
 
-  /* ------------------------------------------------------------------
-     [교체 지점] 실제 API 연동 시 이 함수 하나만 바꾸면 됩니다.
-     나머지 UI 코드는 손댈 필요 없음.
+  /* 서버리스 프록시(api/verify.js)를 경유한다.
+     브라우저에서 data.go.kr 을 직접 부르면 CORS 로 막히고,
+     인증키를 프론트에 두면 소스보기로 노출되기 때문. */
+  var ENDPOINT = '/api/verify';
 
-       function fetchCertificate(serial) {
-         var url = new URL('https://apis.data.go.kr/.../getCertInfo');
-         url.searchParams.set('serviceKey', SERVICE_KEY); // Decoding 키
-         url.searchParams.set('certNo', serial);
-         url.searchParams.set('type', 'json');
-         return fetch(url).then(function (res) {
-           if (!res.ok) throw new Error('HTTP ' + res.status);
-           return res.json();
-         });
-       }
-     ------------------------------------------------------------------ */
+  /** 상태 표시등을 실제 연결 상태로 갱신한다. 장식이 아니라 헬스체크 결과. */
+  function refreshStatus() {
+    return fetch(ENDPOINT)
+      .then(function (res) { return res.json(); })
+      .then(function (d) {
+        if (d.configured) {
+          setStatus('live', '연결됨 (Live)', 'LIVE');
+        } else {
+          setStatus('off', '인증키 미설정', 'SETUP');
+        }
+        return d.configured;
+      })
+      .catch(function () {
+        // 로컬에서 HTML만 열면 프록시가 없으므로 여기로 온다
+        setStatus('off', '프록시 없음', 'OFFLINE');
+        return false;
+      });
+  }
+
+  function setStatus(kind, text, badgeText) {
+    statusText.textContent = text;
+    badge.textContent = badgeText;
+    statusEl.setAttribute('data-state', kind);
+    statusEl.setAttribute('aria-label', 'API 상태 ' + text);
+  }
+
   function fetchCertificate(serial) {
-    return new Promise(function (resolve) {
-      setTimeout(function () {
-        resolve({
-          serial:   serial,
-          status:   '유효 (Verified)',
-          issuer:   '한국환경산업기술원 (KEITI)',
-          offset:   '500',
-          unit:     'tCO2eq',
-          issuedAt: '2026-07-01'
+    return fetch(ENDPOINT + '?serial=' + encodeURIComponent(serial))
+      .then(function (res) {
+        return res.json().then(function (body) {
+          if (!res.ok) {
+            throw new Error(body.error || ('HTTP ' + res.status));
+          }
+          return body;
         });
-      }, LATENCY);
-    });
+      });
   }
 
   function renderLoading() {
@@ -242,30 +267,55 @@
       '</div>';
   }
 
+  var ICON_OK =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" ' +
+    'stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.5 5.5L20 7"/></svg>';
+  var ICON_BAD =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" ' +
+    'stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+  function row(label, value, cls) {
+    return '<div class="vm-row"><dt>' + label + '</dt>' +
+           '<dd' + (cls ? ' class="' + cls + '"' : '') + '>' +
+           escapeHtml(value || '—') + '</dd></div>';
+  }
+
   function renderResult(d) {
     out.setAttribute('aria-busy', 'false');
+
+    // 이 데이터셋은 해지·취소된 건만 담고 있다.
+    // 조회 결과 있음 = 해지/취소 이력 있음 = 무효.
+    var revoked = d.revoked;
+    var hit = (d.matches && d.matches[0]) || {};
+
+    var rows = revoked
+      ? row('상태', '무효 — 인증 해지·취소됨', 'bad') +
+        row('인증번호', hit.certNo) +
+        row('인증제품명', hit.productName) +
+        row('인증기업', hit.company) +
+        row('해지·취소일', hit.revokedAt, 'mono') +
+        row('사유', hit.reason)
+      : row('상태', '해지·취소 이력 없음', 'ok') +
+        row('조회값', d.query) +
+        row('대조 건수', String(d.totalCount) + '건 일치') +
+        row('데이터 출처', d.source);
+
     out.innerHTML =
-      '<article class="vm-result">' +
+      '<article class="vm-result" data-verdict="' + (revoked ? 'bad' : 'ok') + '">' +
         '<div class="vm-result-head">' +
-          '<div class="vm-seal" aria-hidden="true">' +
-            '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" ' +
-                 'stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.5 5.5L20 7"/></svg>' +
-          '</div>' +
+          '<div class="vm-seal" aria-hidden="true">' + (revoked ? ICON_BAD : ICON_OK) + '</div>' +
           '<div>' +
-            '<p class="vm-verdict">인증서 유효함 <span>Verified</span></p>' +
-            '<p class="vm-serial">' + escapeHtml(d.serial) + '</p>' +
+            '<p class="vm-verdict">' +
+              (revoked ? '인증 무효 <span>Revoked</span>' : '해지·취소 이력 없음 <span>Not Revoked</span>') +
+            '</p>' +
+            '<p class="vm-serial">' + escapeHtml(d.query) + '</p>' +
           '</div>' +
         '</div>' +
-        '<dl class="vm-rows">' +
-          '<div class="vm-row"><dt>상태</dt><dd class="ok">' + d.status + '</dd></div>' +
-          '<div class="vm-row"><dt>발행처</dt><dd>' + d.issuer + '</dd></div>' +
-          '<div class="vm-row"><dt>인증된 상쇄량</dt>' +
-            '<dd class="amount">' + d.offset + '<em>' + d.unit + '</em></dd></div>' +
-          '<div class="vm-row"><dt>발행일</dt><dd class="mono">' + d.issuedAt + '</dd></div>' +
-        '</dl>' +
+        '<dl class="vm-rows">' + rows + '</dl>' +
         '<div class="vm-foot">' +
           '<span>조회 시각 ' + timestamp() + '</span>' +
-          '<span>시연용 목업 데이터</span>' +
+          '<span>' + escapeHtml(d.dataset || 'KEITI 공식 오픈API') +
+            (d.cached ? ' (캐시)' : '') + '</span>' +
         '</div>' +
       '</article>';
   }
@@ -316,6 +366,9 @@
   input.addEventListener('input', function () {
     if (hint.textContent) hint.textContent = '';
   });
+
+  // 표시등이 실제 연결 상태를 반영하도록 로드 시 한 번 확인
+  refreshStatus();
 })();
 </script>
 
