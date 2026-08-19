@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>공식 인증서 검증 (KEITI / KCCI)</title>
+<style>
+  :root{
+    --navy:#0f2a44;
+    --navy-soft:#1c4266;
+    --green:#127a4b;
+    --green-bright:#1fb865;
+    --line:#e2e8ef;
+    --bg:#f4f6f9;
+    --card:#ffffff;
+    --text:#12202e;
+    --muted:#6b7c8f;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:40px 20px; background:var(--bg); color:var(--text);
+    font-family:"Pretendard","Noto Sans KR",-apple-system,BlinkMacSystemFont,"Malgun Gothic",sans-serif;
+    -webkit-font-smoothing:antialiased;
+    display:flex; justify-content:center; align-items:flex-start; min-height:100vh;
+  }
+
+  .vm{
+    width:100%; max-width:560px; background:var(--card); border:1px solid var(--line);
+    border-radius:var(--radius); overflow:hidden;
+    box-shadow:0 1px 2px rgba(15,42,68,.04), 0 12px 32px -12px rgba(15,42,68,.16);
+  }
+  .vm::before{
+    content:""; display:block; height:3px;
+    background:linear-gradient(90deg,var(--navy) 0%,var(--green) 55%,var(--green-bright) 100%);
+  }
+
+  /* 헤더 */
+  .vm-head{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:16px;
+    padding:22px 24px 18px; border-bottom:1px solid var(--line);
+  }
+  .vm-title{
+    margin:0; font-size:17px; font-weight:700; letter-spacing:-.02em;
+    display:flex; align-items:center; gap:8px;
+  }
+  .vm-badge{
+    font-size:10px; font-weight:700; letter-spacing:.08em;
+    color:#8a6d1f; background:#fdf5e0; border:1px solid #f0dfae;
+    padding:2px 6px; border-radius:4px;
+  }
+  .vm-sub{margin:5px 0 0; font-size:12.5px; color:var(--muted); letter-spacing:-.01em}
+
+  .vm-status{
+    display:flex; align-items:center; gap:7px; flex-shrink:0;
+    font-size:11.5px; color:var(--muted); background:#f7faf8;
+    border:1px solid #dcebe2; border-radius:99px; padding:5px 11px 5px 9px;
+    white-space:nowrap;
+  }
+  .vm-status strong{color:var(--green); font-weight:600}
+  .vm-dot{
+    width:7px; height:7px; border-radius:50%; background:var(--green-bright);
+    animation:pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(31,184,101,.45)}
+    50%    {opacity:.55; box-shadow:0 0 0 5px rgba(31,184,101,0)}
+  }
+
+  /* 입력부 */
+  .vm-body{padding:24px}
+  .vm-label{display:block; font-size:12.5px; font-weight:600; color:var(--navy-soft); margin-bottom:8px}
+  .vm-field{display:flex; gap:8px}
+  .vm-input{
+    flex:1; min-width:0; padding:12px 14px; font-size:14px; font-family:inherit;
+    border:1px solid var(--line); border-radius:9px; background:#fbfcfd; color:var(--text);
+    transition:border-color .15s, box-shadow .15s, background .15s;
+  }
+  .vm-input::placeholder{color:#a9b6c4; font-family:ui-monospace,"SFMono-Regular",Consolas,monospace; font-size:13px}
+  .vm-input:focus{outline:none; background:#fff; border-color:var(--navy-soft); box-shadow:0 0 0 3px rgba(28,66,102,.1)}
+  .vm-input:disabled{background:#f2f4f7; color:var(--muted)}
+
+  .vm-btn{
+    padding:12px 18px; font-size:13.5px; font-weight:600; font-family:inherit; white-space:nowrap;
+    color:#fff; background:var(--navy); border:none; border-radius:9px; cursor:pointer;
+    transition:background .15s, transform .08s;
+  }
+  .vm-btn:hover:not(:disabled){background:var(--navy-soft)}
+  .vm-btn:active:not(:disabled){transform:translateY(1px)}
+  .vm-btn:disabled{background:#95a5b6; cursor:not-allowed}
+
+  .vm-hint{margin:9px 2px 0; font-size:12px; color:#c0392b; min-height:16px}
+
+  /* 로딩 */
+  .vm-loading{
+    display:flex; align-items:center; gap:11px; margin-top:20px; padding:18px 16px;
+    background:#f8fafc; border:1px solid var(--line); border-radius:11px;
+    font-size:13.5px; color:var(--navy-soft);
+    animation:fade .2s ease-out;
+  }
+  .vm-spinner{
+    width:17px; height:17px; flex-shrink:0; border-radius:50%;
+    border:2px solid #d6e0ea; border-top-color:var(--navy);
+    animation:spin .7s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes fade{from{opacity:0} to{opacity:1}}
+
+  /* 결과 카드 */
+  .vm-result{
+    margin-top:20px; border:1px solid #cfe6da; border-radius:12px; overflow:hidden;
+    background:linear-gradient(180deg,#f6fbf8 0%,#fff 42%);
+    animation:rise .35s cubic-bezier(.2,.7,.3,1);
+  }
+  @keyframes rise{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
+
+  .vm-result-head{
+    display:flex; align-items:center; gap:12px; padding:18px 20px 16px;
+    border-bottom:1px solid #e4f0ea;
+  }
+  .vm-seal{
+    width:38px; height:38px; flex-shrink:0; border-radius:50%;
+    background:var(--green); display:grid; place-items:center;
+    box-shadow:0 0 0 4px rgba(18,122,75,.12);
+  }
+  .vm-seal svg{width:19px; height:19px}
+  .vm-verdict{margin:0; font-size:15.5px; font-weight:700; color:var(--green); letter-spacing:-.02em}
+  .vm-verdict span{font-weight:500; color:var(--muted); font-size:12.5px; margin-left:5px}
+  .vm-serial{
+    margin:3px 0 0; font-size:12px; color:var(--muted);
+    font-family:ui-monospace,"SFMono-Regular",Consolas,monospace; letter-spacing:.02em;
+  }
+
+  .vm-rows{margin:0; padding:6px 20px 16px}
+  .vm-row{
+    display:flex; justify-content:space-between; align-items:baseline; gap:16px;
+    padding:11px 0; border-bottom:1px dashed #e6ecf1;
+  }
+  .vm-row:last-child{border-bottom:none}
+  .vm-row dt{font-size:12.5px; color:var(--muted); flex-shrink:0}
+  .vm-row dd{margin:0; font-size:13.5px; font-weight:600; color:var(--text); text-align:right}
+  .vm-row dd.ok{color:var(--green)}
+  .vm-row dd.amount{font-size:16px; color:var(--navy); letter-spacing:-.02em}
+  .vm-row dd.amount em{font-style:normal; font-size:12px; color:var(--muted); font-weight:500; margin-left:3px}
+  .vm-row dd.mono{font-family:ui-monospace,"SFMono-Regular",Consolas,monospace; font-weight:500; font-size:13px}
+
+  .vm-foot{
+    padding:11px 20px; background:#f7faf8; border-top:1px solid #e4f0ea;
+    font-size:11px; color:var(--muted); display:flex; justify-content:space-between; gap:12px;
+  }
+  .vm-note{
+    margin:0; padding:12px 24px; background:#fbfcfd; border-top:1px solid var(--line);
+    font-size:11px; color:#98a6b5; line-height:1.5;
+  }
+
+  @media (max-width:420px){
+    .vm-head{flex-direction:column-reverse; align-items:flex-start}
+    .vm-field{flex-direction:column}
+    .vm-btn{width:100%}
+  }
+</style>
+</head>
+<body>
+
+<section class="vm">
+  <header class="vm-head">
+    <div>
+      <h2 class="vm-title">공식 인증서 검증 <span class="vm-badge">DEMO</span></h2>
+      <p class="vm-sub">KEITI / KCCI 인증 데이터 연계</p>
+    </div>
+    <div class="vm-status" role="status" aria-label="API 상태 연결됨">
+      <span class="vm-dot" aria-hidden="true"></span>
+      <span>API 상태: <strong>연결됨 (Live)</strong></span>
+    </div>
+  </header>
+
+  <div class="vm-body">
+    <form id="vmForm" novalidate>
+      <label class="vm-label" for="vmSerial">인증서 일련번호</label>
+      <div class="vm-field">
+        <input class="vm-input" id="vmSerial" type="text" placeholder="예: K-ETS-2026"
+               autocomplete="off" spellcheck="false" aria-describedby="vmHint">
+        <button class="vm-btn" id="vmBtn" type="submit">API로 검증하기</button>
+      </div>
+      <p class="vm-hint" id="vmHint" role="alert"></p>
+    </form>
+
+    <div id="vmOut" aria-live="polite" aria-busy="false"></div>
+  </div>
+
+  <p class="vm-note">※ 본 화면은 시연용 목업입니다. 표시되는 인증 정보는 실제 KEITI 조회 결과가 아닙니다.</p>
+</section>
+
+<script>
+(function () {
+  'use strict';
+
+  var form  = document.getElementById('vmForm');
+  var input = document.getElementById('vmSerial');
+  var btn   = document.getElementById('vmBtn');
+  var hint  = document.getElementById('vmHint');
+  var out   = document.getElementById('vmOut');
+
+  var LATENCY = 1500; // 로딩 체감 시간(ms)
+
+  /* ------------------------------------------------------------------
+     [교체 지점] 실제 API 연동 시 이 함수 하나만 바꾸면 됩니다.
+     나머지 UI 코드는 손댈 필요 없음.
+
+       function fetchCertificate(serial) {
+         var url = new URL('https://apis.data.go.kr/.../getCertInfo');
+         url.searchParams.set('serviceKey', SERVICE_KEY); // Decoding 키
+         url.searchParams.set('certNo', serial);
+         url.searchParams.set('type', 'json');
+         return fetch(url).then(function (res) {
+           if (!res.ok) throw new Error('HTTP ' + res.status);
+           return res.json();
+         });
+       }
+     ------------------------------------------------------------------ */
+  function fetchCertificate(serial) {
+    return new Promise(function (resolve) {
+      setTimeout(function () {
+        resolve({
+          serial:   serial,
+          status:   '유효 (Verified)',
+          issuer:   '한국환경산업기술원 (KEITI)',
+          offset:   '500',
+          unit:     'tCO2eq',
+          issuedAt: '2026-07-01'
+        });
+      }, LATENCY);
+    });
+  }
+
+  function renderLoading() {
+    out.setAttribute('aria-busy', 'true');
+    out.innerHTML =
+      '<div class="vm-loading">' +
+        '<span class="vm-spinner" aria-hidden="true"></span>' +
+        '<span>KEITI DB에서 불러오는 중...</span>' +
+      '</div>';
+  }
+
+  function renderResult(d) {
+    out.setAttribute('aria-busy', 'false');
+    out.innerHTML =
+      '<article class="vm-result">' +
+        '<div class="vm-result-head">' +
+          '<div class="vm-seal" aria-hidden="true">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" ' +
+                 'stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.5 5.5L20 7"/></svg>' +
+          '</div>' +
+          '<div>' +
+            '<p class="vm-verdict">인증서 유효함 <span>Verified</span></p>' +
+            '<p class="vm-serial">' + escapeHtml(d.serial) + '</p>' +
+          '</div>' +
+        '</div>' +
+        '<dl class="vm-rows">' +
+          '<div class="vm-row"><dt>상태</dt><dd class="ok">' + d.status + '</dd></div>' +
+          '<div class="vm-row"><dt>발행처</dt><dd>' + d.issuer + '</dd></div>' +
+          '<div class="vm-row"><dt>인증된 상쇄량</dt>' +
+            '<dd class="amount">' + d.offset + '<em>' + d.unit + '</em></dd></div>' +
+          '<div class="vm-row"><dt>발행일</dt><dd class="mono">' + d.issuedAt + '</dd></div>' +
+        '</dl>' +
+        '<div class="vm-foot">' +
+          '<span>조회 시각 ' + timestamp() + '</span>' +
+          '<span>시연용 목업 데이터</span>' +
+        '</div>' +
+      '</article>';
+  }
+
+  function timestamp() {
+    var n = new Date();
+    var p = function (v) { return String(v).padStart(2, '0'); };
+    return n.getFullYear() + '-' + p(n.getMonth() + 1) + '-' + p(n.getDate()) +
+           ' ' + p(n.getHours()) + ':' + p(n.getMinutes());
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+
+  function setBusy(busy) {
+    btn.disabled = busy;
+    input.disabled = busy;
+    btn.textContent = busy ? '검증 중...' : 'API로 검증하기';
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    var serial = input.value.trim().toUpperCase();
+    if (!serial) {
+      hint.textContent = '인증서 일련번호를 입력해 주세요.';
+      input.focus();
+      return;
+    }
+
+    hint.textContent = '';
+    setBusy(true);
+    renderLoading();
+
+    fetchCertificate(serial)
+      .then(renderResult)
+      .catch(function (err) {
+        out.setAttribute('aria-busy', 'false');
+        out.innerHTML = '';
+        hint.textContent = '조회에 실패했습니다: ' + err.message;
+      })
+      .then(function () { setBusy(false); });
+  });
+
+  input.addEventListener('input', function () {
+    if (hint.textContent) hint.textContent = '';
+  });
+})();
+</script>
+
+</body>
+</html>
