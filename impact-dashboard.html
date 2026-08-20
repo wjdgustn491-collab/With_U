@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESG 탄소 중립 성과 대시보드</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/sidebar.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans KR', 'sans-serif'],
+                    },
+                    colors: {
+                        esg: {
+                            green: '#10B981',
+                            dark: '#064E3B',
+                            light: '#D1FAE5',
+                            accent: '#059669',
+                            blue: '#3B82F6',
+                            yellow: '#F59E0B'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #f8fafc;
+            -webkit-font-smoothing: antialiased;
+        }
+        .fade-in {
+            animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .metric-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .metric-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: #10B981;
+        }
+        .pulse-bg {
+            animation: pulseBg 3s infinite;
+        }
+        @keyframes pulseBg {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body class="wu-has-sidebar min-h-screen flex items-center justify-center p-4 md:p-8">
+
+    <div class="max-w-6xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+        
+        <!-- Header Section -->
+        <div class="relative bg-esg-dark p-8 md:p-12 text-white overflow-hidden">
+            <!-- Background Decorative Elements -->
+            <div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-esg-green opacity-20 blur-3xl"></div>
+            <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-emerald-800 opacity-40 blur-3xl"></div>
+            
+            <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div class="flex items-center gap-3">
+                    <span class="pulse-bg bg-esg-green text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">LIVE</span>
+                    <span class="text-emerald-200 text-sm font-medium"><i class="fa-solid fa-leaf mr-2"></i>Net-Zero Public Dashboard</span>
+                </div>
+                <div class="text-emerald-200/80 text-xs md:text-sm text-right">
+                    최종 업데이트: <span id="current-time">방금 전</span>
+                </div>
+            </div>
+            
+            <div class="relative z-10">
+                <h1 class="text-4xl md:text-5xl font-black mb-4 tracking-tight leading-tight">지구를 위한<br><span class="text-esg-green">탄소 감축 성과</span></h1>
+                <p class="text-emerald-100 text-lg md:text-xl max-w-2xl font-light leading-relaxed">
+                    파이썬 엔진이 산출한 통합 탄소 상쇄량을 누구나 이해하기 쉬운 일상 속 지표로 변환하여 보여줍니다.
+                </p>
+            </div>
+        </div>
+
+        <div class="p-6 md:p-10 bg-gray-50 border-b border-gray-200">
+            <div class="max-w-3xl mx-auto bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <label for="carbonInput" class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">
+                    <i class="fa-solid fa-code mr-2 text-esg-green"></i>엔진 산출 결과 시뮬레이션 (Total Offset kgCO₂eq)
+                </label>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="relative flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-cloud text-gray-400"></i>
+                        </div>
+                        <input type="number" id="carbonInput" value="12500" min="0" step="100" 
+                            class="block w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-300 rounded-xl text-lg font-semibold text-gray-800 focus:ring-2 focus:ring-esg-green focus:border-esg-green outline-none transition-all" 
+                            placeholder="예: 12500">
+                    </div>
+                    <button onclick="updateDashboard()" 
+                        class="bg-esg-dark hover:bg-emerald-800 text-white font-bold py-4 px-8 rounded-xl transition-colors shadow-lg hover:shadow-xl flex items-center justify-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-chart-line"></i> 성과 반영하기
+                    </button>
+                </div>
+                <p class="mt-3 text-xs text-gray-500 font-medium">* 파이썬 모듈의 <code class="bg-gray-100 px-1.5 py-0.5 rounded text-esg-dark">total_offset</code> 결과값을 이곳에 입력합니다.</p>
+            </div>
+        </div>
+
+        <div class="p-8 md:p-12">
+            <div class="text-center mb-12 fade-in" style="animation-delay: 0.1s;">
+                <h2 class="text-gray-500 font-bold tracking-widest uppercase mb-4 text-sm md:text-base">누적 온실가스 감축 효과</h2>
+                <div class="inline-flex items-baseline justify-center gap-2 bg-emerald-50 px-8 py-6 rounded-3xl border border-emerald-100">
+                    <span id="display-carbon" class="text-5xl md:text-7xl font-black text-esg-dark tracking-tighter">12,500</span>
+                    <span class="text-xl md:text-2xl font-bold text-esg-green">kgCO₂</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                
+                <!-- Metric 1: 소나무 (Pine Trees) -->
+                <div class="metric-card bg-white rounded-3xl border-2 border-gray-100 p-6 md:p-8 flex flex-col items-center text-center relative overflow-hidden fade-in" style="animation-delay: 0.2s;">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-50 rounded-full opacity-50 pointer-events-none"></div>
+                    <div class="w-16 h-16 md:w-20 md:h-20 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-3xl md:text-4xl mb-6 shadow-sm transform rotate-3">
+                        <i class="fa-solid fa-tree"></i>
+                    </div>
+                    <h3 class="text-gray-800 font-bold text-lg md:text-xl mb-2">30년생 소나무 식재</h3>
+                    <div class="flex items-baseline gap-1 mb-4">
+                        <span id="metric-tree" class="text-3xl md:text-5xl font-black text-emerald-600">0</span>
+                        <span class="text-base md:text-lg text-gray-500 font-medium">그루</span>
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-500 mt-auto bg-gray-50 px-4 py-2 rounded-lg w-full">
+                        소나무 1그루 연 6.6kg 흡수 기준
+                    </p>
+                </div>
+
+                <!-- Metric 2: 승용차 (Cars) -->
+                <div class="metric-card bg-white rounded-3xl border-2 border-gray-100 p-6 md:p-8 flex flex-col items-center text-center relative overflow-hidden fade-in" style="animation-delay: 0.3s;">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-50 rounded-full opacity-50 pointer-events-none"></div>
+                    <div class="w-16 h-16 md:w-20 md:h-20 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-3xl md:text-4xl mb-6 shadow-sm transform -rotate-3">
+                        <i class="fa-solid fa-car-side"></i>
+                    </div>
+                    <h3 class="text-gray-800 font-bold text-lg md:text-xl mb-2">승용차 운행 정지</h3>
+                    <div class="flex items-baseline gap-1 mb-4">
+                        <span id="metric-car" class="text-3xl md:text-5xl font-black text-blue-600">0</span>
+                        <span class="text-base md:text-lg text-gray-500 font-medium">대 / 1년</span>
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-500 mt-auto bg-gray-50 px-4 py-2 rounded-lg w-full">
+                        연 1.5만km 주행, 약 2.4톤 배출 기준
+                    </p>
+                </div>
+
+                <!-- Metric 3: 스마트폰 (Smartphones) -->
+                <div class="metric-card bg-white rounded-3xl border-2 border-gray-100 p-6 md:p-8 flex flex-col items-center text-center relative overflow-hidden fade-in" style="animation-delay: 0.4s;">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-50 rounded-full opacity-50 pointer-events-none"></div>
+                    <div class="w-16 h-16 md:w-20 md:h-20 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center text-3xl md:text-4xl mb-6 shadow-sm transform rotate-3">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                    </div>
+                    <h3 class="text-gray-800 font-bold text-lg md:text-xl mb-2">스마트폰 완전 충전</h3>
+                    <div class="flex items-baseline gap-1 mb-4">
+                        <span id="metric-phone" class="text-3xl md:text-5xl font-black text-purple-600">0</span>
+                        <span class="text-base md:text-lg text-gray-500 font-medium">회 분량</span>
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-500 mt-auto bg-gray-50 px-4 py-2 rounded-lg w-full">
+                        1회 충전 시 약 8g 배출 기준 (EPA)
+                    </p>
+                </div>
+
+                <!-- Metric 4: 플라스틱 컵 (Plastic Cups) -->
+                <div class="metric-card bg-white rounded-3xl border-2 border-gray-100 p-6 md:p-8 flex flex-col items-center text-center relative overflow-hidden fade-in" style="animation-delay: 0.5s;">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-amber-50 rounded-full opacity-50 pointer-events-none"></div>
+                    <div class="w-16 h-16 md:w-20 md:h-20 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center text-3xl md:text-4xl mb-6 shadow-sm transform -rotate-3">
+                        <i class="fa-solid fa-bottle-water"></i>
+                    </div>
+                    <h3 class="text-gray-800 font-bold text-lg md:text-xl mb-2">일회용 플라스틱 용기</h3>
+                    <div class="flex items-baseline gap-1 mb-4">
+                        <span id="metric-cup" class="text-3xl md:text-5xl font-black text-amber-600">0</span>
+                        <span class="text-base md:text-lg text-gray-500 font-medium">개 절약</span>
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-500 mt-auto bg-gray-50 px-4 py-2 rounded-lg w-full">
+                        컵 1개당 약 52g 배출 기준
+                    </p>
+                </div>
+
+                <!-- Metric 5: 햄버거 (Burgers) -->
+                <div class="metric-card bg-white rounded-3xl border-2 border-gray-100 p-6 md:p-8 flex flex-col items-center text-center relative overflow-hidden fade-in" style="animation-delay: 0.6s;">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-rose-50 rounded-full opacity-50 pointer-events-none"></div>
+                    <div class="w-16 h-16 md:w-20 md:h-20 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center text-3xl md:text-4xl mb-6 shadow-sm transform rotate-3">
+                        <i class="fa-solid fa-burger"></i>
+                    </div>
+                    <h3 class="text-gray-800 font-bold text-lg md:text-xl mb-2">소고기 햄버거</h3>
+                    <div class="flex items-baseline gap-1 mb-4">
+                        <span id="metric-burger" class="text-3xl md:text-5xl font-black text-rose-600">0</span>
+                        <span class="text-base md:text-lg text-gray-500 font-medium">개 안 먹은 효과</span>
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-500 mt-auto bg-gray-50 px-4 py-2 rounded-lg w-full">
+                        햄버거 1개당 약 4.0kg 배출 기준
+                    </p>
+                </div>
+
+                <!-- Metric 6: 가정집 전기 (Household Electricity) -->
+                <div class="metric-card bg-white rounded-3xl border-2 border-gray-100 p-6 md:p-8 flex flex-col items-center text-center relative overflow-hidden fade-in" style="animation-delay: 0.7s;">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-teal-50 rounded-full opacity-50 pointer-events-none"></div>
+                    <div class="w-16 h-16 md:w-20 md:h-20 bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center text-3xl md:text-4xl mb-6 shadow-sm transform -rotate-3">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <h3 class="text-gray-800 font-bold text-lg md:text-xl mb-2">4인 가구 한 달 전기</h3>
+                    <div class="flex items-baseline gap-1 mb-4">
+                        <span id="metric-home" class="text-3xl md:text-5xl font-black text-teal-600">0</span>
+                        <span class="text-base md:text-lg text-gray-500 font-medium">가구 분량</span>
+                    </div>
+                    <p class="text-xs md:text-sm text-gray-500 mt-auto bg-gray-50 px-4 py-2 rounded-lg w-full">
+                        월 300kWh (약 138kg 배출) 기준
+                    </p>
+                </div>
+
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 p-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-400">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>본 지표는 국립산림과학원 및 환경부 환경성적표지 산정 기준을 바탕으로 환산된 근사치입니다.</span>
+            </div>
+            <div class="font-bold text-gray-500">
+                ESG Carbon Engine v1.0
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 현재 시간 업데이트
+        const timeElement = document.getElementById('current-time');
+        const now = new Date();
+        timeElement.innerText = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+        // 환산 기준 상수 (kg CO2eq)
+        const FACTOR_PINE_TREE = 6.6;     // 30년생 소나무 1그루 연간 흡수량 (kg)
+        const FACTOR_CAR_YEAR = 2400.0;   // 승용차 1대 연간 배출량 평균 (kg)
+        const FACTOR_PLASTIC_CUP = 0.052; // 플라스틱 컵 1개 발생량 (kg)
+        const FACTOR_SMARTPHONE = 0.008;  // 스마트폰 1회 완충 발생량 약 8g (kg)
+        const FACTOR_BURGER = 4.0;        // 소고기 햄버거 1개 생산 발생량 (kg)
+        const FACTOR_HOME = 138.0;        // 4인가구 1개월 전력(300kWh) 배출량 (kg)
+
+        // 숫자 카운트업 애니메이션 유틸리티
+        function animateValue(id, start, end, duration, isFloat = false) {
+            const obj = document.getElementById(id);
+            if (!obj) return;
+            
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                
+                // Ease Out Expo (빠르게 시작해서 끝에서 느려짐)
+                const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+                
+                let currentVal = start + easeProgress * (end - start);
+                
+                if (isFloat) {
+                    obj.innerHTML = currentVal.toFixed(1).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                } else {
+                    obj.innerHTML = Math.floor(currentVal).toLocaleString();
+                }
+                
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    // 최종값 보정
+                    obj.innerHTML = isFloat ? end.toFixed(1).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : Math.floor(end).toLocaleString();
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // 대시보드 업데이트 메인 함수
+        function updateDashboard() {
+            const inputElement = document.getElementById('carbonInput');
+            const inputVal = parseFloat(inputElement.value);
+            
+            if (isNaN(inputVal) || inputVal < 0) {
+                // 부적절한 입력값 처리 (깜빡임 애니메이션 등으로 에러 표시 가능)
+                inputElement.classList.add('border-red-500', 'ring-red-500');
+                setTimeout(() => inputElement.classList.remove('border-red-500', 'ring-red-500'), 1000);
+                return;
+            }
+
+            // 상단 메인 CO2 표시 (카운트업 애니메이션 적용)
+            const displayCarbon = document.getElementById('display-carbon');
+            const currentDisplayVal = parseFloat(displayCarbon.innerText.replace(/,/g, '')) || 0;
+            animateValue("display-carbon", currentDisplayVal, inputVal, 1500, false);
+
+            // 지표별 환산 계산
+            const trees = inputVal / FACTOR_PINE_TREE;
+            const cars = inputVal / FACTOR_CAR_YEAR;
+            const phones = inputVal / FACTOR_SMARTPHONE;
+            const cups = inputVal / FACTOR_PLASTIC_CUP;
+            const burgers = inputVal / FACTOR_BURGER;
+            const homes = inputVal / FACTOR_HOME;
+
+            // 각각의 수치 애니메이션 트리거 (약간씩 시간차를 두어 시각적 즐거움 극대화)
+            animateValue("metric-tree", 0, trees, 1500, false);
+            animateValue("metric-car", 0, cars, 1800, true);
+            animateValue("metric-phone", 0, phones, 2100, false);
+            animateValue("metric-cup", 0, cups, 2400, false);
+            animateValue("metric-burger", 0, burgers, 2700, false);
+            animateValue("metric-home", 0, homes, 3000, true);
+            
+            // 시각적 피드백을 위해 카드 애니메이션 재실행
+            const cards = document.querySelectorAll('.metric-card');
+            cards.forEach((card, index) => {
+                card.classList.remove('fade-in');
+                void card.offsetWidth; // Trigger DOM reflow
+                card.style.animationDelay = `${0.1 * (index + 1)}s`;
+                card.classList.add('fade-in');
+            });
+        }
+
+        // 페이지 로드 시 초기 데이터 반영 애니메이션 실행
+        window.onload = () => {
+            // 약간의 지연 후 실행하여 렌더링 효과 극대화
+            setTimeout(updateDashboard, 300);
+        };
+    </script>
+<script src="assets/sidebar.js" defer></script>
+</body>
+</html>

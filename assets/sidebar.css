@@ -1,0 +1,118 @@
+/* ============================================================
+   WITH_U 공용 사이드바
+   모든 페이지가 이 파일과 sidebar.js 한 쌍만 불러오면
+   동일한 내비게이션을 갖는다. 마크업은 JS가 주입한다.
+   사용법: <body class="wu-has-sidebar"> + css/js 링크
+   ============================================================ */
+
+:root{
+  /* 데스크톱 기준 화면의 약 1/5 (좁은 화면에서는 248px 하한) */
+  --wu-sb-w: max(248px, 20vw);
+  --wu-sb-top: #0f2a44;
+  --wu-sb-bot: #0a1c2e;
+  --wu-sb-green: #1fb865;
+  --wu-sb-green-deep: #127a4b;
+  --wu-sb-line: rgba(255,255,255,.08);
+  --wu-sb-text: #c9d7e3;
+  --wu-sb-muted: #7f97ac;
+}
+
+/* 본문을 사이드바 폭만큼 밀어낸다.
+   각 페이지가 body에 지정한 padding 은 건드리지 않기 위해 margin 사용. */
+body.wu-has-sidebar{ margin-left: var(--wu-sb-w); }
+
+/* ── 사이드바 본체 ───────────────────────────── */
+.wu-sidebar{
+  position:fixed; inset:0 auto 0 0; width:var(--wu-sb-w);
+  display:flex; flex-direction:column; z-index:900; overflow-y:auto;
+  background:linear-gradient(180deg,var(--wu-sb-top) 0%,var(--wu-sb-bot) 100%);
+  border-right:1px solid rgba(255,255,255,.06);
+  color:#e8eef4;
+  font-family:"Pretendard","Noto Sans KR",-apple-system,BlinkMacSystemFont,"Malgun Gothic",sans-serif;
+  font-size:13px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+.wu-sidebar::before{
+  content:""; display:block; height:3px; flex-shrink:0;
+  background:linear-gradient(90deg,var(--wu-sb-green-deep) 0%,var(--wu-sb-green) 100%);
+}
+
+/* ── 브랜드 ─────────────────────────────────── */
+.wu-brand{
+  display:flex; align-items:center; gap:11px; text-decoration:none; color:#fff;
+  padding:21px 20px 18px; border-bottom:1px solid var(--wu-sb-line);
+  transition:background .16s;
+}
+.wu-brand:hover{background:rgba(255,255,255,.04)}
+.wu-brand-mark{
+  width:35px; height:35px; flex-shrink:0; border-radius:10px; display:grid; place-items:center;
+  background:linear-gradient(135deg,var(--wu-sb-green-deep),var(--wu-sb-green));
+  font-size:12px; font-weight:800; letter-spacing:-.04em; color:#fff;
+  box-shadow:0 4px 12px -4px rgba(31,184,101,.5);
+}
+.wu-brand-text strong{display:block; font-size:14.5px; font-weight:700; letter-spacing:-.02em}
+.wu-brand-text span{
+  display:block; margin-top:3px; font-size:10px; font-weight:600;
+  letter-spacing:.1em; color:var(--wu-sb-muted); text-transform:uppercase;
+}
+
+/* ── 메뉴 ───────────────────────────────────── */
+.wu-nav{padding:17px 12px 12px; flex:1 0 auto}
+.wu-nav-label{
+  margin:0 0 9px; padding:0 9px; font-size:10px; font-weight:700;
+  letter-spacing:.13em; color:#5f778c; text-transform:uppercase;
+}
+.wu-item{
+  position:relative; display:flex; gap:11px; align-items:flex-start;
+  padding:11px 11px 12px; margin-bottom:4px; border-radius:10px;
+  text-decoration:none; color:var(--wu-sb-text);
+  transition:background .16s, color .16s;
+}
+.wu-item:hover{background:rgba(255,255,255,.06); color:#fff}
+.wu-item.is-active{background:rgba(31,184,101,.13); color:#fff}
+.wu-item.is-active::before{
+  content:""; position:absolute; left:0; top:50%; transform:translateY(-50%);
+  width:3px; height:24px; border-radius:0 3px 3px 0; background:var(--wu-sb-green);
+}
+.wu-item svg{
+  width:17px; height:17px; flex-shrink:0; margin-top:2px;
+  fill:none; stroke:currentColor; stroke-width:1.7;
+  stroke-linecap:round; stroke-linejoin:round; opacity:.85;
+}
+.wu-item.is-active svg{opacity:1; color:var(--wu-sb-green)}
+.wu-item b{display:block; font-size:13px; font-weight:600; letter-spacing:-.01em}
+.wu-item small{
+  display:block; margin-top:3px; font-size:10.5px; line-height:1.45; color:var(--wu-sb-muted);
+}
+.wu-item.is-active small{color:#9ed7ba}
+
+/* ── 하단 ───────────────────────────────────── */
+.wu-foot{
+  padding:13px 20px 17px; border-top:1px solid var(--wu-sb-line);
+  font-size:10.5px; line-height:1.6; color:#5f778c;
+}
+.wu-foot strong{display:block; color:#8fa6ba; font-weight:600; letter-spacing:.02em}
+
+/* ── 모바일 토글 ────────────────────────────── */
+.wu-nav-toggle{
+  display:none; position:fixed; top:14px; left:14px; z-index:1000;
+  width:42px; height:42px; padding:0; border-radius:11px; cursor:pointer;
+  align-items:center; justify-content:center;
+  background:#fff; color:#0f2a44; border:1px solid #dbe3ec;
+  box-shadow:0 8px 20px -10px rgba(15,42,68,.5);
+}
+.wu-nav-toggle svg{width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round}
+.wu-backdrop{display:none; position:fixed; inset:0; z-index:890; background:rgba(10,28,46,.5)}
+
+@media (max-width:900px){
+  body.wu-has-sidebar{margin-left:0; padding-top:68px}
+  .wu-sidebar{
+    width:min(300px,84vw); transform:translateX(-100%);
+    transition:transform .24s cubic-bezier(.4,0,.2,1);
+  }
+  .wu-sidebar.is-open{transform:none; box-shadow:0 0 44px rgba(0,0,0,.4)}
+  .wu-nav-toggle{display:flex}
+  .wu-backdrop.is-open{display:block}
+}
+@media (prefers-reduced-motion:reduce){
+  .wu-sidebar{transition:none}
+}
