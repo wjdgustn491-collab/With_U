@@ -7,7 +7,7 @@
 | 파일 | 역할 |
 |---|---|
 | `index.html` | **진입 화면.** 왼쪽 사이드바(화면의 1/5) + 오른쪽 4/5 정중앙의 작업 타이틀. |
-| `carbon-dashboard.html` | 통합 탄소 대시보드 — 배출(Input) 대 상쇄(Output) 대조. |
+| `carbon-dashboard.html` | 통합 탄소 대시보드 — 실제 배출량과 크레딧 소각(Retirement) 상쇄량을 상계 없이 병렬 표기. |
 | `impact-dashboard.html` | ESG 공공 성과 지표 — 감축량을 일상 속 체감 지표로 환산. |
 | `certificate-verify.html` | 공식 인증서 검증 (KEITI / KCCI). |
 | `assets/sidebar.css`<br>`assets/sidebar.js` | 공용 사이드바. 각 페이지는 이 두 파일만 링크하면 동일한 내비게이션을 갖습니다. |

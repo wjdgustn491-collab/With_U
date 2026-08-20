@@ -19,7 +19,7 @@
       href: 'carbon-dashboard.html',
       icon: 'scale',
       title: '통합 탄소 대시보드',
-      desc: '배출(Input) 대 상쇄(Output) 실시간 대조'
+      desc: '실제 배출량과 상쇄량을 상계 없이 병렬 표기'
     },
     {
       href: 'impact-dashboard.html',

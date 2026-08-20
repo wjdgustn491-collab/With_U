@@ -123,35 +123,37 @@
   }
   .live-load strong{color:var(--text); font-weight:700; font-size:13px}
 
-  /* ── P0-1 순배출 히어로 ─────────────────────── */
+  /* ── P0-1 배출 현황 히어로 ─────────────────── */
   .hero{margin-bottom:18px}
-  .hero-top{display:flex; justify-content:space-between; align-items:flex-start; gap:24px; flex-wrap:wrap}
-  .hero-pct{font-size:46px; font-weight:700; letter-spacing:-.04em; line-height:1}
-  .hero-pct-l{font-size:12.5px; font-weight:600; color:var(--muted)}
-  .hero-net{text-align:right}
-  .hero-net-k{font-size:11.5px; color:var(--muted); margin-bottom:5px}
-  .hero-net-v{font-size:27px; font-weight:700; letter-spacing:-.035em; line-height:1}
-  .hero-net-v small{font-size:12px; font-weight:600; color:var(--muted); margin-left:5px}
+  /* 배출 / 상쇄 직렬 표기 — 위 줄이 배출량, 아래 줄이 누적 상쇄량.
+     같은 카드에 위아래로 두되 배경·테두리를 분리해 하나의 저울로 읽히지 않게 한다. */
+  .dual{display:flex; flex-direction:column}
+  .dual-row{
+    display:flex; justify-content:space-between; align-items:center; gap:22px;
+    padding:16px 19px; border-radius:12px; border:1px solid;
+  }
+  .dual-row.emit{background:var(--emit-soft); border-color:var(--emit-line)}
+  .dual-row.off{background:var(--offset-soft); border-color:var(--offset-line)}
+  .dual-l{min-width:0}
+  .dual-r{flex-shrink:0; text-align:right}
+  .dual-k{
+    display:flex; align-items:center; gap:7px; flex-wrap:wrap;
+    font-size:12.5px; font-weight:700; color:var(--navy-soft);
+  }
+  .dual-v{font-size:30px; font-weight:700; letter-spacing:-.04em; line-height:1.05}
+  .dual-v small{font-size:12.5px; font-weight:600; color:var(--muted); margin-left:5px}
+  .dual-sub{font-size:11.5px; font-weight:600; color:var(--muted); margin-top:5px; white-space:nowrap}
+  .dual-n{font-size:11.5px; color:var(--muted); line-height:1.55; margin-top:6px}
 
-  .cov{margin-top:22px}
-  .cov-track{
-    position:relative; height:34px; border-radius:9px; overflow:hidden;
-    background:var(--emit-soft); border:1px solid var(--emit-line); display:flex;
+  .dual-sep{display:flex; align-items:center; gap:11px; padding:9px 6px}
+  .dual-sep-ln{
+    flex:1; height:1px;
+    background:repeating-linear-gradient(90deg,#d5dee7 0 5px,transparent 5px 10px);
   }
-  .cov-fill{
-    background:linear-gradient(90deg,var(--green) 0%,var(--green-bright) 100%);
-    width:0; transition:width .9s cubic-bezier(.2,.7,.3,1);
+  .dual-sep-chip{
+    font-size:10.5px; font-weight:700; white-space:nowrap; padding:5px 10px; border-radius:99px;
+    color:var(--warn); background:var(--warn-soft); border:1px solid var(--warn-line);
   }
-  .cov-rest{flex:1; position:relative}
-  .cov-rest::after{
-    content:""; position:absolute; inset:0;
-    background:repeating-linear-gradient(135deg,transparent 0 6px,rgba(192,57,43,.13) 6px 12px);
-  }
-  .cov-legend{display:flex; justify-content:space-between; gap:14px; margin-top:11px; flex-wrap:wrap}
-  .cov-item{display:flex; align-items:center; gap:7px; font-size:12.5px}
-  .cov-sw{width:9px; height:9px; border-radius:2px; flex-shrink:0}
-  .cov-item b{font-weight:700}
-  .cov-item span{color:var(--muted)}
 
   .hero-foot{
     display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; padding-top:18px;
@@ -170,21 +172,15 @@
   }
   .banner b{font-weight:700}
 
-  /* ── P0-2 미러 차트 ─────────────────────────── */
-  .mirror-wrap{position:relative}
-  .mirror svg{width:100%; height:auto; display:block; overflow:visible}
+  /* ── P0-2 오늘 24시간 배출 차트 ─────────────── */
+  .chart-wrap{position:relative}
+  .chart svg{width:100%; height:auto; display:block; overflow:visible}
   .m-grid{stroke:#eef1f5; stroke-width:1}
   .m-zero{stroke:#c9d4de; stroke-width:1.2}
   .m-axis{fill:#a3b0bd; font-size:10.5px; font-family:inherit}
-  .m-axis-r{fill:#93a3b5; font-size:10px; font-family:inherit}
   .m-emit{fill:rgba(192,57,43,.5); stroke:var(--emit); stroke-width:1.4}
-  .m-off{fill:rgba(18,122,75,.42); stroke:var(--offset); stroke-width:1.4}
-  .m-cum{fill:none; stroke:var(--navy); stroke-width:2.4; stroke-linejoin:round}
-  .m-cum-gap{fill:none; stroke:var(--navy); stroke-width:2.4; stroke-dasharray:3 4; opacity:.5}
   .m-gap{fill:rgba(107,124,143,.07); stroke:none}
   .m-gap-t{fill:#9aa8b6; font-size:9.5px; font-family:inherit; text-anchor:middle}
-  .m-cross{fill:#fff; stroke:var(--navy); stroke-width:2.2}
-  .m-cross-t{fill:var(--navy); font-size:10.5px; font-weight:700; font-family:inherit}
   .m-hover{stroke:var(--navy-soft); stroke-width:1; stroke-dasharray:2 3; opacity:0}
   .m-hit{fill:transparent; cursor:crosshair}
   .m-hit:focus{outline:none}
@@ -202,10 +198,9 @@
   .tip dt{color:#a9bccd}
   .tip dd{margin:0; text-align:right; font-weight:700; font-variant-numeric:tabular-nums}
 
-  .mirror-legend{display:flex; gap:16px; flex-wrap:wrap; margin-top:14px}
+  .chart-legend{display:flex; gap:16px; flex-wrap:wrap; margin-top:14px}
   .ml{display:flex; align-items:center; gap:7px; font-size:12px; color:var(--muted)}
   .ml-sw{width:12px; height:9px; border-radius:2px; flex-shrink:0}
-  .ml-ln{width:14px; height:2.4px; border-radius:2px; background:var(--navy); flex-shrink:0}
 
   /* ── P0-4 KPI ──────────────────────────────── */
   .kpi-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px}
@@ -232,7 +227,6 @@
 
   /* ── 그리드 ────────────────────────────────── */
   .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px}
-  .row2{display:grid; grid-template-columns:1fr 1fr; gap:18px}
 
   /* ── P1-1 목표 페이스 ──────────────────────── */
   .big-stat{display:flex; align-items:baseline; gap:8px}
@@ -357,20 +351,8 @@
 
   .calc-note{margin:12px 2px 0; font-size:11.5px; color:#a3b0bd; line-height:1.55}
 
-  /* ── P1-4 / P1-3 ───────────────────────────── */
-  .bench{margin-top:16px}
-  .bench-row{margin-bottom:13px}
-  .bench-lab{display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px}
-  .bench-lab span{color:var(--muted)}
-  .bench-lab strong{font-weight:700; font-variant-numeric:tabular-nums}
-  .bench-track{height:11px; border-radius:99px; background:#eef1f5; overflow:hidden}
-  .bench-fill{height:100%; border-radius:99px; width:0; transition:width .9s cubic-bezier(.2,.7,.3,1)}
 
-  .share-bar{height:11px; border-radius:99px; background:#eef1f5; overflow:hidden; margin-top:16px}
-  .share-fill{height:100%; border-radius:99px; background:var(--warn); width:0;
-              transition:width .9s cubic-bezier(.2,.7,.3,1)}
-
-  /* ── P2-2 상쇄 원장 ────────────────────────── */
+  /* ── P2-2 크레딧 보유 원장 ─────────────────── */
   .tbl-scroll{overflow-x:auto}
   table.ledger{width:100%; border-collapse:collapse; font-size:12.5px; min-width:660px}
   table.ledger th{
@@ -382,10 +364,10 @@
   table.ledger td.r{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
   .serial{font-family:ui-monospace,"SFMono-Regular",Consolas,monospace; font-size:11.5px; font-weight:600}
   .st{font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:5px; white-space:nowrap}
-  .st.ok{color:var(--offset); background:var(--offset-soft); border:1px solid var(--offset-line)}
-  .use-track{width:60px; height:6px; border-radius:99px; background:#eef1f5; overflow:hidden;
-             display:inline-block; vertical-align:middle; margin-right:8px}
-  .use-fill{display:block; height:100%; background:var(--green-bright); border-radius:99px}
+  .st.retired{color:var(--offset); background:var(--offset-soft); border:1px solid var(--offset-line)}
+  .st.held{color:var(--navy-soft); background:#eef3f8; border:1px solid #d8e3ee}
+  .st.moved{color:var(--muted); background:#f4f6f9; border:1px solid var(--line)}
+  .lock{font-size:10px; color:var(--muted); margin-left:6px; white-space:nowrap}
   .ledger-foot{
     display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap;
     margin-top:16px; padding:13px 15px; border-radius:10px;
@@ -418,7 +400,6 @@
   /* ── 반응형 ────────────────────────────────── */
   @media (max-width:1000px){
     .row3{grid-template-columns:1fr}
-    .row2{grid-template-columns:1fr}
     .kpi-grid{grid-template-columns:repeat(2,1fr)}
   }
   @media (max-width:640px){
@@ -427,9 +408,9 @@
     .calc-inputs{grid-template-columns:1fr}
     .card-head{flex-direction:column; gap:11px}
     .page-head h1{font-size:18px}
-    .hero-top{flex-direction:column; gap:16px}
-    .hero-net{text-align:left}
-    .hero-pct{font-size:38px}
+    .dual-row{flex-direction:column; align-items:flex-start; gap:11px}
+    .dual-r{text-align:left}
+    .dual-v{font-size:26px}
     .hero-chip{min-width:100%}
   }
 </style>
@@ -440,41 +421,39 @@
   <div class="page-head">
     <div>
       <h1>WITH_U 통합 탄소 대시보드 <em>PROTOTYPE</em></h1>
-      <p>실시간 배출(Input)과 상쇄(Output)를 한 화면에서 대조합니다.</p>
+      <p>실제 배출량과 크레딧 소각(Retirement) 상쇄량을 나란히 표기합니다. 두 값은 상계하지 않습니다.</p>
     </div>
     <div class="head-right" id="headRight"></div>
   </div>
 
-  <!-- P0-1 순배출 히어로 -->
+  <!-- P0-1 배출 현황 히어로 -->
   <section class="card hero">
     <div class="card-head">
       <div>
-        <h2 class="card-title">순배출 현황</h2>
-        <p class="card-sub">당월 누적 배출에서 인증서 기반 상쇄를 차감한 값입니다</p>
+        <h2 class="card-title">배출 · 상쇄 현황</h2>
+        <p class="card-sub">좌측은 계측된 실제 배출량, 우측은 소각 확정된 상쇄량입니다. 둘을 뺀 순배출은 산출하지 않습니다</p>
       </div>
       <div class="pill neutral" id="heroPeriod"></div>
     </div>
     <div class="card-body" id="hero"></div>
   </section>
 
-  <!-- P0-2 오늘 24시간 미러 차트 -->
+  <!-- P0-2 오늘 24시간 배출 차트 -->
   <section class="card" style="margin-bottom:18px">
     <div class="card-head">
       <div>
-        <h2 class="card-title">오늘 24시간 배출 · 상쇄</h2>
-        <p class="card-sub">위쪽이 배출(Input), 아래쪽이 상쇄(Output). 검은 선은 누적 순배출이며 0을 통과하는 지점이 순배출 전환 시점입니다.</p>
+        <h2 class="card-title">오늘 24시간 배출</h2>
+        <p class="card-sub">시간별 계측 배출량입니다. 결측 구간은 보간하지 않습니다.</p>
       </div>
-      <div class="pill neutral"><span>상쇄는 일 균등 배분 가정</span></div>
+      <div class="pill neutral"><span>1시간 단위 집계</span></div>
     </div>
     <div class="card-body">
-      <div class="mirror-wrap">
-        <div class="mirror" id="mirror"><svg viewBox="0 0 900 340" role="img" aria-label="오늘 24시간 배출 및 상쇄 미러 차트"></svg></div>
+      <div class="chart-wrap">
+        <div class="chart" id="emitChart"><svg viewBox="0 0 900 300" role="img" aria-label="오늘 24시간 시간별 배출량 차트"></svg></div>
         <div class="tip" id="tip"></div>
       </div>
-      <div class="mirror-legend">
+      <div class="chart-legend">
         <div class="ml"><span class="ml-sw" style="background:rgba(192,57,43,.5); border:1px solid var(--emit)"></span>배출 (kgCO₂/h)</div>
-        <div class="ml"><span class="ml-sw" style="background:rgba(18,122,75,.42); border:1px solid var(--offset)"></span>상쇄 (kgCO₂/h)</div>
-        <div class="ml"><span class="ml-ln"></span>누적 순배출 (우측 축)</div>
         <div class="ml"><span class="ml-sw" style="background:rgba(107,124,143,.14)"></span>데이터 결측 — 보간하지 않음</div>
       </div>
     </div>
@@ -568,38 +547,12 @@
     </div>
   </section>
 
-  <!-- P1-4 대기전력 / P1-3 유사 세대 -->
-  <div class="row2" style="margin-bottom:18px">
-
-    <section class="card">
-      <div class="card-head">
-        <div>
-          <h2 class="card-title">대기전력 추정</h2>
-          <p class="card-sub">새벽 03~05시 최소 부하를 기준선으로 산출</p>
-        </div>
-        <span class="tag measured">계측 기반</span>
-      </div>
-      <div class="card-body" id="standby"></div>
-    </section>
-
-    <section class="card">
-      <div class="card-head">
-        <div>
-          <h2 class="card-title">유사 세대 평균 대비</h2>
-          <p class="card-sub">동일 가구원수 월평균 배출량 기준선</p>
-        </div>
-      </div>
-      <div class="card-body" id="bench"></div>
-    </section>
-
-  </div>
-
-  <!-- P2-2 상쇄 원장 -->
+  <!-- P2-2 크레딧 원장 -->
   <section class="card" style="margin-bottom:18px">
     <div class="card-head">
       <div>
-        <h2 class="card-title">상쇄 원장</h2>
-        <p class="card-sub">보유 인증서와 소진 현황. 감축분은 아래에 별도 표기합니다</p>
+        <h2 class="card-title">탄소 크레딧 원장 — 발행 · 보유 · 이전 · 소각</h2>
+        <p class="card-sub">1 크레딧 = 1 tCO₂e. 소각(Retirement)한 수량의 합계가 상쇄량이며 배출량에서 차감하지 않습니다</p>
       </div>
       <div class="pill" id="ledgerPill"></div>
     </div>
@@ -611,18 +564,18 @@
     <div class="card-head">
       <div>
         <h2 class="card-title">공식 인증서 검증 (KEITI / KCCI)</h2>
-        <p class="card-sub">보유 중인 탄소 상쇄 인증서의 유효성을 공식 기관 DB에서 확인합니다</p>
+        <p class="card-sub">환경표지인증 해지·취소 여부를 KEITI 공식 오픈API로 조회합니다. 크레딧 소각 여부는 조회 대상이 아닙니다</p>
       </div>
-      <div class="pill"><span class="dot"></span>API 상태: <strong>연결됨 (Live)</strong></div>
+      <div class="pill warn"><span class="dot warn"></span>등록부 소각 조회 <strong>미지원</strong></div>
     </div>
     <div class="card-body cert-body">
       <div class="cert-facts">
         <div>
-          <div class="fact-k">보유 인증서</div>
+          <div class="fact-k">등록 크레딧</div>
           <div class="fact-v" id="certCount">—</div>
         </div>
         <div>
-          <div class="fact-k">총 인증 상쇄량</div>
+          <div class="fact-k">소각(상쇄) 누적</div>
           <div class="fact-v" id="certTotal">—</div>
         </div>
         <div>
@@ -656,18 +609,17 @@
     /* P0-3 Live */
     live: { lastSeenSec: 13, currentWatt: 340 },
 
-    /* P0-1 순배출 — 단위 전부 kgCO2eq (PRD §10-1 해소) */
+    /* P0-1 배출 현황 — 단위 전부 kgCO2eq
+       크레딧은 여기에 넣지 않는다. 배출량에서 차감하는 값이 아니므로
+       balance 안에 두면 곧 net = emitted - offset 을 만들게 된다. */
     balance: {
-      emitted: 272.4,          // 당월 누적 배출
-      offset:  168.0,          // 당월 적용 상쇄 (인증서 기반만)
-      reduced:  37.2,          // 감축분 — 별도 표기, 합산 금지
-      creditBalance: 244.0,    // 잔여 크레딧
+      emitted: 272.4,          // 당월 누적 배출 (계측)
+      reduced:  37.2,          // 전월 동기 대비 감축분 — 배출을 실제로 줄인 양
       prevSamePeriod: 309.6    // 전월 동기 누적
     },
 
-    /* P0-2 오늘 시간별 (kgCO2/h) · null = 결측, 보간 금지 */
+    /* P0-2 오늘 시간별 배출 (kgCO2/h) · null = 결측, 보간 금지 */
     today: {
-      offsetRate: 0.35,
       emit: [
         0.22, 0.20, 0.19, null, 0.18, 0.20, 0.28, 0.45,
         0.62, 0.55, 0.48, 0.52, 0.68, 0.58, 0.50, 0.48,
@@ -689,8 +641,6 @@
 
     goal:      { monthly: 420 },                    // P1-1
     tariff:    { kwh: 277, tiers: [300, 450] },     // P1-2 하계 주택용 저압
-    benchmark: { peerAvg: 468, householdSize: 3 },  // P1-3
-    standby:   { watt: 42 },                        // P1-4
 
     manual:   { elec: 277, gas: 28.3 },
     autoSync: { elec: 291, gas: 30.1, meter: 'WITHU-RPI-0142', pulses: 291000 },
@@ -702,10 +652,24 @@
       { name:'폐기물', value: 23.4, color:'var(--fp-nitrogen)' }
     ],
 
-    /* P2-2 상쇄 원장 */
-    certs: [
-      { serial:'K-ETS-2026-0417',    issuer:'KEITI', amount:320, used:256, issued:'2026-07-01', status:'유효' },
-      { serial:'KCCI-VER-2026-0092', issuer:'KCCI',  amount:180, used:  0, issued:'2026-05-14', status:'유효' }
+    /* P2-2 탄소 크레딧 원장
+       기본단위: 1 크레딧 = 1 tCO2e = 1,000 kgCO2eq (등록부 발행 단위)
+       상태 3종 — held(보유) / transferred(이전) / retired(소각·상쇄 확정)
+       retired 합계가 상쇄량이다. 배출량에서 차감하지 않고 병렬로 표기한다.
+       ETRS 배출권등록부·상쇄등록부(ORS)는 로그인 전용이라 소각 여부를
+       공개 API로 확인할 수 없다. verified 는 증빙 문서 확인 여부이며 기본 false. */
+    credits: [
+      { serial:'KOC-2026-0417-0001', registry:'상쇄등록부(ORS)', issuer:'KEITI',
+        qty:2, vintage:2025, issued:'2026-07-01',
+        state:'retired', actedOn:'2026-08-05', targetYear:2026,
+        evidence:'ORS-소각확인서-20260805.pdf', verified:false },
+      { serial:'KCCI-VER-2026-0092', registry:'KCCI 탄소감축인증센터', issuer:'KCCI',
+        qty:1, vintage:2025, issued:'2026-05-14',
+        state:'held', actedOn:null, targetYear:null, evidence:null, verified:false },
+      { serial:'KOC-2026-0388-0007', registry:'상쇄등록부(ORS)', issuer:'KEITI',
+        qty:1, vintage:2024, issued:'2026-03-20',
+        state:'transferred', actedOn:'2026-06-11', targetYear:null,
+        evidence:'ORS-이전내역-20260611.pdf', verified:false }
     ]
   };
 
@@ -713,6 +677,8 @@
   var FACTOR = { elec: 0.4781, gas: 2.176 };
   /* 계량기 적산 LED 펄스 상수 — 1000 imp/kWh (펄스 1개 = 1Wh) */
   var PULSE_PER_KWH = 1000;
+  /* 크레딧 기본단위 — 1 크레딧 = 1 tCO2e = 1,000 kgCO2eq */
+  var CREDIT_KG = 1000;
 
   var ICONS = {
     carbon:   '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>',
@@ -756,42 +722,31 @@
     return out;
   }
 
-  /* 파생값 — 저장하지 않고 매번 도출 (단일 진실 공급원 유지) */
+  /* 파생값 — 저장하지 않고 매번 도출 (단일 진실 공급원 유지)
+     순배출(배출 − 상쇄)은 산출하지 않는다. 상쇄는 배출을 없애는 것이
+     아니라 별도로 확보한 감축·제거 성과이므로 두 값을 뺀 지표는
+     회계적으로 성립하지 않는다. */
   function derive() {
     var b = DATA.balance;
-    var net        = b.emitted - b.offset;
-    var rate       = b.emitted > 0 ? (b.offset / b.emitted) * 100 : 0;
-    var avgDaily   = b.emitted / DATA.daysElapsed;
-    var daysLeft   = DATA.daysInMonth - DATA.daysElapsed;
-    var projected  = avgDaily * DATA.daysInMonth;
-    var creditDays = avgDaily > 0 ? b.creditBalance / avgDaily : 0;
+    var avgDaily  = b.emitted / DATA.daysElapsed;
+    var daysLeft  = DATA.daysInMonth - DATA.daysElapsed;
+    var projected = avgDaily * DATA.daysInMonth;
+    var cutPct    = b.prevSamePeriod > 0 ? (b.reduced / b.prevSamePeriod) * 100 : 0;
 
-    var t = DATA.today;
-    var emitToday = 0, offsetToday = 0, cum = [], run = 0;
-    t.emit.forEach(function (v) {
-      if (v === null) { cum.push(null); return; }   // 결측 구간은 누적을 진행시키지 않음
-      emitToday   += v;
-      offsetToday += t.offsetRate;
-      run += v - t.offsetRate;
-      cum.push(run);
+    /* 크레딧 상태별 집계 (단위: 크레딧 = tCO2e) */
+    var cr = { held:0, transferred:0, retired:0 };
+    DATA.credits.forEach(function (c) {
+      if (cr[c.state] === undefined) return;
+      cr[c.state] += c.qty;
     });
+    var creditTotal = cr.held + cr.transferred + cr.retired;
 
-    /* 누적 순배출이 0을 상향 통과하는 지점 */
-    var cross = null, prev = null;
-    for (var i = 0; i < cum.length; i++) {
-      if (cum[i] === null) continue;
-      if (prev && prev.v < 0 && cum[i] >= 0) {
-        cross = { from:prev.i, to:i, fromV:prev.v, toV:cum[i] };
-        break;
-      }
-      prev = { i:i, v:cum[i] };
-    }
+    /* 상쇄량 — 소각 확정된 크레딧만. 어떤 배출 지표에도 반영하지 않는다. */
+    var offsetKg = cr.retired * CREDIT_KG;
 
     return {
-      net:net, rate:rate, avgDaily:avgDaily, daysLeft:daysLeft,
-      projected:projected, creditDays:creditDays,
-      emitToday:emitToday, offsetToday:offsetToday,
-      netToday:emitToday - offsetToday, cum:cum, cross:cross
+      avgDaily:avgDaily, daysLeft:daysLeft, projected:projected, cutPct:cutPct,
+      credits:cr, creditTotal:creditTotal, offsetKg:offsetKg
     };
   }
 
@@ -815,52 +770,59 @@
         (ok ? fmt(DATA.live.currentWatt, 0) : '—') + '</strong>' + (ok ? ' W' : '') + '</div>';
   }
 
-  /* ── P0-1 순배출 히어로 ─────────────────────── */
+  /* ── P0-1 배출 · 상쇄 병렬 히어로 ─────────────
+     좌: 계측된 실제 배출량 / 우: 소각(Retirement) 확정된 상쇄량.
+     두 값을 뺀 숫자는 어디에도 만들지 않는다. */
   function renderHero() {
     var d = derive(), b = DATA.balance;
-    var covered = Math.min(100, d.rate);
-    var neutral = d.net <= 0;
+    var better = b.reduced > 0;
 
     el('heroPeriod').innerHTML =
       '<strong>' + DATA.daysElapsed + '일 경과</strong> · 잔여 ' + d.daysLeft + '일';
 
     el('hero').innerHTML = '' +
-      '<div class="hero-top">' +
-        '<div>' +
-          '<div class="hero-pct" style="color:' + (neutral ? 'var(--offset)' : 'var(--navy)') + '">' +
-            fmt(covered, 1) + '<span style="font-size:24px">%</span></div>' +
-          '<div class="hero-pct-l" style="margin-top:8px">탄소중립 달성률 (상쇄 ÷ 배출)</div>' +
-        '</div>' +
-        '<div class="hero-net">' +
-          '<div class="hero-net-k">순배출 (배출 − 상쇄)</div>' +
-          '<div class="hero-net-v" style="color:' + (neutral ? 'var(--offset)' : 'var(--emit)') + '">' +
-            signed(d.net) + '<small>kgCO₂eq</small></div>' +
-          '<div class="hero-chip-n" style="margin-top:6px">' +
-            (neutral ? '중립 달성 — 상쇄가 배출을 초과했습니다' : '아직 상쇄되지 않은 배출량입니다') +
+      '<div class="dual">' +
+
+        '<div class="dual-row emit">' +
+          '<div class="dual-l">' +
+            '<div class="dual-k">당월 실제 배출량 <span class="tag measured">계측</span></div>' +
+            '<div class="dual-n">실제로 배출한 양입니다. 크레딧을 소각해도 이 숫자는 줄지 않습니다.</div>' +
+          '</div>' +
+          '<div class="dual-r">' +
+            '<div class="dual-v" style="color:var(--emit)">' + fmt(b.emitted) +
+              '<small>kgCO₂eq</small></div>' +
+            '<div class="dual-sub">= ' + fmt(b.emitted / CREDIT_KG, 3) + ' tCO₂e</div>' +
           '</div>' +
         '</div>' +
-      '</div>' +
 
-      '<div class="cov">' +
-        '<div class="cov-track" role="img" aria-label="배출 ' + fmt(b.emitted) + ' kg 중 ' + fmt(b.offset) + ' kg 상쇄">' +
-          '<div class="cov-fill" id="covFill"></div>' +
-          '<div class="cov-rest"></div>' +
+        '<div class="dual-sep" aria-hidden="true">' +
+          '<span class="dual-sep-ln"></span>' +
+          '<span class="dual-sep-chip">상계 불가</span>' +
+          '<span class="dual-sep-ln"></span>' +
         '</div>' +
-        '<div class="cov-legend">' +
-          '<div class="cov-item"><span class="cov-sw" style="background:var(--offset)"></span>' +
-            '<b>상쇄 ' + fmt(b.offset) + '</b><span>kgCO₂eq · Output</span></div>' +
-          '<div class="cov-item"><span class="cov-sw" style="background:var(--emit); opacity:.4"></span>' +
-            '<b>미상쇄 ' + fmt(Math.max(0, d.net)) + '</b><span>kgCO₂eq</span></div>' +
-          '<div class="cov-item"><span>전체 배출 </span><b>' + fmt(b.emitted) + '</b>' +
-            '<span>kgCO₂eq · Input</span></div>' +
+
+        '<div class="dual-row off">' +
+          '<div class="dual-l">' +
+            '<div class="dual-k">누적 상쇄량 · Retirement <span class="tag estimated">미검증</span></div>' +
+            '<div class="dual-n">소각이 확정되어 재판매·재사용이 불가한 외부 크레딧입니다. ' +
+              '위 배출량과 합산하거나 차감하지 않습니다.</div>' +
+          '</div>' +
+          '<div class="dual-r">' +
+            '<div class="dual-v" style="color:var(--offset)">' + fmt(d.offsetKg, 0) +
+              '<small>kgCO₂eq</small></div>' +
+            '<div class="dual-sub">= ' + d.credits.retired + ' 크레딧 (1 크레딧 = 1 tCO₂e)</div>' +
+          '</div>' +
         '</div>' +
+
       '</div>' +
 
       '<div class="hero-foot">' +
         '<div class="hero-chip">' +
-          '<div class="hero-chip-k">상쇄 크레딧 잔고</div>' +
-          '<div class="hero-chip-v">' + fmt(b.creditBalance) + ' kgCO₂eq</div>' +
-          '<div class="hero-chip-n">현재 페이스로 <b>' + fmt(d.creditDays, 0) + '일분</b> 남음</div>' +
+          '<div class="hero-chip-k">전월 동기 대비 감축</div>' +
+          '<div class="hero-chip-v" style="color:' + (better ? 'var(--offset)' : 'var(--emit)') + '">' +
+            signed(-b.reduced) + ' kgCO₂eq</div>' +
+          '<div class="hero-chip-n">' + fmt(b.prevSamePeriod) + ' → ' + fmt(b.emitted) +
+            ' kg (' + signed(-d.cutPct, 1) + '%) · 상쇄와 합산 금지</div>' +
         '</div>' +
         '<div class="hero-chip">' +
           '<div class="hero-chip-k">일평균 배출</div>' +
@@ -868,67 +830,69 @@
           '<div class="hero-chip-n">최근 ' + DATA.daysElapsed + '일 기준</div>' +
         '</div>' +
         '<div class="hero-chip">' +
-          '<div class="hero-chip-k">감축분 <span class="tag estimated">상쇄와 별개</span></div>' +
-          '<div class="hero-chip-v" style="color:var(--offset)">−' + fmt(b.reduced) + ' kgCO₂eq</div>' +
-          '<div class="hero-chip-n">전월 동기 ' + fmt(b.prevSamePeriod) + ' 대비</div>' +
+          '<div class="hero-chip-k">월말 예상 배출</div>' +
+          '<div class="hero-chip-v">' + fmt(d.projected) + ' kgCO₂eq</div>' +
+          '<div class="hero-chip-n">현재 페이스 유지 시</div>' +
+        '</div>' +
+        '<div class="hero-chip">' +
+          '<div class="hero-chip-k">미소각 크레딧</div>' +
+          '<div class="hero-chip-v">' + d.credits.held + ' 크레딧</div>' +
+          '<div class="hero-chip-n">보유 ' + d.credits.held + ' · 이전 ' + d.credits.transferred +
+            ' · 소각 ' + d.credits.retired + ' (총 ' + d.creditTotal + ')</div>' +
         '</div>' +
       '</div>' +
 
       '<div class="banner"><span>ⓘ</span><span>' +
-        '<b>감축과 상쇄는 합산하지 않습니다.</b> 감축(−' + fmt(b.reduced) + ' kg)은 덜 배출한 양이고, ' +
-        '상쇄(' + fmt(b.offset) + ' kg)는 인증서로 확보한 외부 크레딧입니다. 두 값을 더하면 이중계산입니다.' +
+        '<b>배출량과 상쇄량은 상계하지 않습니다.</b> 배출 10,000 tCO₂e 인 사업자가 크레딧 2,000개를 ' +
+        '소각했다면 순배출 8,000이 아니라 <b>배출 10,000 · 상쇄 2,000</b> 으로 분리 표기하는 것이 기본입니다. ' +
+        '감축(' + signed(-b.reduced) + ' kg)은 배출을 실제로 줄인 것이고 상쇄(' + fmt(d.offsetKg, 0) + ' kg)는 ' +
+        '사업장 밖 성과를 크레딧으로 확보한 것이므로, 이 셋은 각각 별도 항목입니다. ' +
+        'CBAM에서 공제로 인정되는 것은 원산지에서 법적 구속력 있게 실제 납부한 탄소가격이며 ' +
+        '자발적 크레딧은 인정되지 않습니다.' +
       '</span></div>';
-
-    setTimeout(function () { el('covFill').style.width = covered + '%'; }, 80);
   }
 
-  /* ── P0-2 미러 차트 ─────────────────────────── */
-  function renderMirror() {
-    var host = el('mirror');
+  /* ── P0-2 오늘 24시간 배출 차트 ───────────────
+     배출 계열만 그린다. 크레딧은 배출을 상쇄하는 값이 아니므로
+     같은 축에 마주 세우면 잘못된 대조가 된다. */
+  function renderEmitChart() {
+    var host = el('emitChart');
     var svg  = host.querySelector('svg');
     var tip  = el('tip');
-    var d    = derive();
     var t    = DATA.today;
     var n    = t.emit.length;
 
-    var W = 900, H = 340;
-    var PAD = { t:24, r:60, b:36, l:54 };
+    var W = 900, H = 300;
+    var PAD = { t:24, r:24, b:36, l:54 };
     var plotW = W - PAD.l - PAD.r;
     var plotH = H - PAD.t - PAD.b;
-    var centerY = PAD.t + plotH / 2;
-    var half = plotH / 2 - 14;
+    var baseY = PAD.t + plotH;
 
-    var maxRate = 1.2;
-    var cumVals = d.cum.filter(function (v) { return v !== null; }).map(Math.abs);
-    var cumMax  = Math.max(1, Math.ceil(Math.max.apply(null, cumVals)));
+    /* 좌축 최대 — 실측 피크를 0.2 단위로 올림 */
+    var peak = Math.max.apply(null, t.emit.map(function (v) { return v === null ? 0 : v; }));
+    var maxRate = Math.max(0.4, Math.ceil(peak / 0.2) * 0.2);
 
-    function X(i)     { return PAD.l + (i / (n - 1)) * plotW; }
-    function yEmit(v) { return centerY - (v / maxRate) * half; }
-    function yOff(v)  { return centerY + (v / maxRate) * half; }
-    function yCum(v)  { return centerY - (v / cumMax) * half; }
+    function X(i) { return PAD.l + (i / (n - 1)) * plotW; }
+    function Y(v) { return baseY - (v / maxRate) * plotH; }
 
     var p = [];
 
-    /* 좌측 축 — 배출/상쇄 rate */
-    [0.4, 0.8, 1.2].forEach(function (v) {
-      p.push('<line class="m-grid" x1="' + PAD.l + '" y1="' + yEmit(v).toFixed(1) + '" x2="' + (W - PAD.r) + '" y2="' + yEmit(v).toFixed(1) + '"/>');
-      p.push('<text class="m-axis" x="' + (PAD.l - 9) + '" y="' + (yEmit(v) + 3.5).toFixed(1) + '" text-anchor="end">' + v.toFixed(1) + '</text>');
+    /* 좌측 축 — 시간당 배출률 */
+    [0.25, 0.5, 0.75, 1].forEach(function (f) {
+      var v = maxRate * f;
+      p.push('<line class="m-grid" x1="' + PAD.l + '" y1="' + Y(v).toFixed(1) +
+             '" x2="' + (W - PAD.r) + '" y2="' + Y(v).toFixed(1) + '"/>');
+      p.push('<text class="m-axis" x="' + (PAD.l - 9) + '" y="' + (Y(v) + 3.5).toFixed(1) +
+             '" text-anchor="end">' + v.toFixed(1) + '</text>');
     });
-    p.push('<line class="m-grid" x1="' + PAD.l + '" y1="' + yOff(0.4).toFixed(1) + '" x2="' + (W - PAD.r) + '" y2="' + yOff(0.4).toFixed(1) + '"/>');
-    p.push('<text class="m-axis" x="' + (PAD.l - 9) + '" y="' + (yOff(0.4) + 3.5).toFixed(1) + '" text-anchor="end">0.4</text>');
     p.push('<text class="m-lab" x="' + (PAD.l - 46) + '" y="' + (PAD.t - 8) + '">kgCO₂/h</text>');
-
-    /* 우측 축 — 누적 순배출 */
-    [-cumMax / 2, 0, cumMax / 2, cumMax].forEach(function (v) {
-      p.push('<text class="m-axis-r" x="' + (W - PAD.r + 10) + '" y="' + (yCum(v) + 3.5).toFixed(1) + '">' + signed(v, 1) + '</text>');
-    });
-    p.push('<text class="m-lab" x="' + (W - PAD.r + 10) + '" y="' + (PAD.t - 8) + '">누적</text>');
 
     /* 결측 구간 음영 */
     t.emit.forEach(function (v, i) {
       if (v !== null) return;
       var x0 = X(Math.max(0, i - 0.5)), x1 = X(Math.min(n - 1, i + 0.5));
-      p.push('<rect class="m-gap" x="' + x0.toFixed(1) + '" y="' + PAD.t + '" width="' + (x1 - x0).toFixed(1) + '" height="' + plotH + '"/>');
+      p.push('<rect class="m-gap" x="' + x0.toFixed(1) + '" y="' + PAD.t +
+             '" width="' + (x1 - x0).toFixed(1) + '" height="' + plotH + '"/>');
       p.push('<text class="m-gap-t" x="' + ((x0 + x1) / 2).toFixed(1) + '" y="' + (PAD.t + 12) + '">결측</text>');
     });
 
@@ -941,50 +905,24 @@
     if (cur.length) runs.push(cur);
 
     runs.forEach(function (run) {
-      var seg = 'M ' + X(run[0]).toFixed(1) + ' ' + centerY.toFixed(1);
-      run.forEach(function (i) { seg += ' L ' + X(i).toFixed(1) + ' ' + yEmit(t.emit[i]).toFixed(1); });
-      seg += ' L ' + X(run[run.length - 1]).toFixed(1) + ' ' + centerY.toFixed(1) + ' Z';
+      var seg = 'M ' + X(run[0]).toFixed(1) + ' ' + baseY.toFixed(1);
+      run.forEach(function (i) { seg += ' L ' + X(i).toFixed(1) + ' ' + Y(t.emit[i]).toFixed(1); });
+      seg += ' L ' + X(run[run.length - 1]).toFixed(1) + ' ' + baseY.toFixed(1) + ' Z';
       p.push('<path class="m-emit" d="' + seg + '"/>');
     });
 
-    /* 상쇄 영역 — 일 균등 배분이므로 평탄 */
-    p.push('<path class="m-off" d="M ' + X(0).toFixed(1) + ' ' + centerY.toFixed(1) +
-           ' L ' + X(0).toFixed(1) + ' ' + yOff(t.offsetRate).toFixed(1) +
-           ' L ' + X(n - 1).toFixed(1) + ' ' + yOff(t.offsetRate).toFixed(1) +
-           ' L ' + X(n - 1).toFixed(1) + ' ' + centerY.toFixed(1) + ' Z"/>');
-
-    /* 0 기준선 */
-    p.push('<line class="m-zero" x1="' + PAD.l + '" y1="' + centerY.toFixed(1) + '" x2="' + (W - PAD.r) + '" y2="' + centerY.toFixed(1) + '"/>');
-
-    /* 누적 순배출 라인 — 결측 구간은 점선 */
-    var pts = [];
-    d.cum.forEach(function (v, i) { if (v !== null) pts.push({ i:i, v:v }); });
-    for (var k = 0; k < pts.length - 1; k++) {
-      var a = pts[k], bb = pts[k + 1];
-      p.push('<path class="' + ((bb.i - a.i > 1) ? 'm-cum-gap' : 'm-cum') + '" d="M ' +
-             X(a.i).toFixed(1) + ' ' + yCum(a.v).toFixed(1) + ' L ' +
-             X(bb.i).toFixed(1) + ' ' + yCum(bb.v).toFixed(1) + '"/>');
-    }
-
-    /* 순배출 전환 지점 */
-    if (d.cross) {
-      var c = d.cross;
-      var frac = (0 - c.fromV) / (c.toV - c.fromV);
-      var cxx  = X(c.from) + (X(c.to) - X(c.from)) * frac;
-      var hh   = Math.round(c.from + (c.to - c.from) * frac);
-      p.push('<circle class="m-cross" cx="' + cxx.toFixed(1) + '" cy="' + centerY.toFixed(1) + '" r="5.5"/>');
-      p.push('<text class="m-cross-t" x="' + (cxx + 10).toFixed(1) + '" y="' + (centerY - 11).toFixed(1) + '">' +
-             hh + '시 순배출 전환</text>');
-    }
+    /* 기준선 */
+    p.push('<line class="m-zero" x1="' + PAD.l + '" y1="' + baseY.toFixed(1) +
+           '" x2="' + (W - PAD.r) + '" y2="' + baseY.toFixed(1) + '"/>');
 
     /* x축 */
     [0, 6, 12, 18, 23].forEach(function (i) {
-      p.push('<text class="m-axis" x="' + X(i).toFixed(1) + '" y="' + (PAD.t + plotH + 21) + '" text-anchor="middle">' +
-             (i === 23 ? '24' : ('0' + i).slice(-2)) + '시</text>');
+      p.push('<text class="m-axis" x="' + X(i).toFixed(1) + '" y="' + (baseY + 21) +
+             '" text-anchor="middle">' + (i === 23 ? '24' : ('0' + i).slice(-2)) + '시</text>');
     });
 
     /* hover 가이드 + 히트 영역 */
-    p.push('<line class="m-hover" id="mHover" x1="0" y1="' + PAD.t + '" x2="0" y2="' + (PAD.t + plotH) + '"/>');
+    p.push('<line class="m-hover" id="mHover" x1="0" y1="' + PAD.t + '" x2="0" y2="' + baseY + '"/>');
     var slot = plotW / (n - 1);
     for (var i2 = 0; i2 < n; i2++) {
       p.push('<rect class="m-hit" data-i="' + i2 + '" tabindex="0" role="button" ' +
@@ -996,19 +934,17 @@
 
     svg.innerHTML = p.join('');
 
-    /* 툴팁 */
+    /* 툴팁 — 배출만 표시 */
     var wrap  = host.parentNode;
     var hover = svg.querySelector('#mHover');
 
     function show(i) {
-      var v = t.emit[i], cv = d.cum[i];
+      var v = t.emit[i];
       tip.innerHTML =
         '<b>' + ('0' + i).slice(-2) + ':00</b>' +
-        '<dl>' +
-          '<dt>배출</dt><dd>' + (v === null ? '결측' : fmt(v, 2) + ' kg/h') + '</dd>' +
-          '<dt>상쇄</dt><dd>' + fmt(t.offsetRate, 2) + ' kg/h</dd>' +
-          '<dt>누적 순배출</dt><dd>' + (cv === null ? '—' : signed(cv, 2) + ' kg') + '</dd>' +
-        '</dl>';
+        '<dl><dt>배출</dt><dd>' +
+          (v === null ? '결측 — 보간하지 않음' : fmt(v, 2) + ' kg/h') +
+        '</dd></dl>';
 
       var sb = svg.getBoundingClientRect();
       var wb = wrap.getBoundingClientRect();
@@ -1293,126 +1229,82 @@
     setMode(false);
   }
 
-  /* ── P1-4 대기전력 ──────────────────────────── */
-  function renderStandby() {
-    var w = DATA.standby.watt;
-    var monthlyKwh = (w * 24 * DATA.daysInMonth) / 1000;
-    var projKwh    = (DATA.tariff.kwh / DATA.daysElapsed) * DATA.daysInMonth;
-    var share      = (monthlyKwh / projKwh) * 100;
-
-    el('standby').innerHTML = '' +
-      '<div class="big-stat"><b>' + fmt(w, 0) + '</b><span>W</span></div>' +
-      '<div class="stat-note">아무것도 켜지 않아도 상시 소비되는 부하입니다. ' +
-        '월 <b>' + fmt(monthlyKwh, 1) + ' kWh</b> · <b>' + fmt(monthlyKwh * FACTOR.elec) + ' kgCO₂eq</b>에 해당합니다.</div>' +
-      '<div class="share-bar"><div class="share-fill" id="sbFill"></div></div>' +
-      '<div class="goal-legend" style="margin-top:8px">' +
-        '<span>전체 전기 사용량의 ' + fmt(share, 1) + '%</span>' +
-        '<span>월말 예상 ' + fmt(projKwh, 0) + ' kWh</span>' +
-      '</div>' +
-      '<div class="goal-rows">' +
-        '<div class="krow"><span>산출 방식</span><strong>03~05시 최소 부하</strong></div>' +
-        '<div class="krow"><span>월 고지서로 산출</span><strong>불가 — 분 단위 계측 필요</strong></div>' +
-      '</div>';
-
-    setTimeout(function () { el('sbFill').style.width = Math.min(100, share) + '%'; }, 80);
-  }
-
-  /* ── P1-3 유사 세대 대비 ────────────────────── */
-  function renderBench() {
-    var d = derive(), bm = DATA.benchmark;
-    var mine = d.projected;
-    var max  = Math.max(mine, bm.peerAvg);
-    var diff = ((mine - bm.peerAvg) / bm.peerAvg) * 100;
-    var better = diff < 0;
-
-    el('bench').innerHTML = '' +
-      '<div class="big-stat">' +
-        '<b style="color:' + (better ? 'var(--offset)' : 'var(--emit)') + '">' +
-          (better ? '−' : '+') + fmt(Math.abs(diff), 1) + '%</b>' +
-        '<span>' + bm.householdSize + '인 가구 평균 대비</span>' +
-      '</div>' +
-      '<div class="stat-note">월말 예상 <b>' + fmt(mine) + ' kg</b>, 유사 세대 평균 <b>' + fmt(bm.peerAvg, 0) + ' kg</b>. ' +
-        (better ? '평균보다 적게 배출하고 있습니다.' : '평균보다 많이 배출하고 있습니다.') + '</div>' +
-      '<div class="bench">' +
-        '<div class="bench-row">' +
-          '<div class="bench-lab"><span>우리 세대 (월말 예상)</span><strong>' + fmt(mine) + ' kg</strong></div>' +
-          '<div class="bench-track"><div class="bench-fill" data-w="' + ((mine / max) * 100).toFixed(1) + '" ' +
-            'style="background:' + (better ? 'var(--green-bright)' : 'var(--emit)') + '"></div></div>' +
-        '</div>' +
-        '<div class="bench-row">' +
-          '<div class="bench-lab"><span>' + bm.householdSize + '인 가구 평균</span><strong>' + fmt(bm.peerAvg, 0) + ' kg</strong></div>' +
-          '<div class="bench-track"><div class="bench-fill" data-w="' + ((bm.peerAvg / max) * 100).toFixed(1) + '" ' +
-            'style="background:#c8d2dc"></div></div>' +
-        '</div>' +
-      '</div>' +
-      '<p class="calc-note">기준선은 통계청·한전 가구당 평균 사용량 기반 <span class="tag estimated">추정</span></p>';
-
-    setTimeout(function () {
-      Array.prototype.forEach.call(el('bench').querySelectorAll('.bench-fill'), function (f) {
-        f.style.width = f.getAttribute('data-w') + '%';
-      });
-    }, 80);
-  }
-
-  /* ── P2-2 상쇄 원장 ─────────────────────────── */
+  /* ── P2-2 크레딧 원장 (생애주기) ───────────────
+     발행 → 보유 → 이전 / 소각(Retirement). 소각은 되돌릴 수 없고
+     그 합계가 상쇄량이 된다. 배출량 계산에는 반영하지 않는다. */
   function renderLedger() {
-    var b = DATA.balance;
-    var total = DATA.certs.reduce(function (a, c) { return a + c.amount; }, 0);
-    var used  = DATA.certs.reduce(function (a, c) { return a + c.used;   }, 0);
+    var d = derive(), b = DATA.balance;
 
-    el('ledgerPill').innerHTML = '<span class="dot"></span>유효 <strong>' + DATA.certs.length + '건</strong>';
+    var STATE = {
+      held:        { label:'보유',            cls:'held',    note:'이전·소각 가능' },
+      transferred: { label:'이전',            cls:'moved',   note:'소유권 이전 완료' },
+      retired:     { label:'소각 · 상쇄 확정', cls:'retired', note:'재판매·재사용 불가' }
+    };
 
-    var rows = DATA.certs.map(function (c) {
-      var pct = c.amount > 0 ? (c.used / c.amount) * 100 : 0;
+    el('ledgerPill').innerHTML =
+      '<span class="dot"></span>소각 <strong>' + d.credits.retired + ' 크레딧</strong> = 상쇄량';
+
+    var rows = DATA.credits.map(function (c) {
+      var s = STATE[c.state] || { label:c.state, cls:'moved', note:'' };
+      var acted = c.actedOn
+        ? escapeHtml(c.actedOn) + (c.targetYear ? ' · 대상연도 ' + c.targetYear : '')
+        : '—';
+      var proof = c.evidence
+        ? escapeHtml(c.evidence) + ' <span class="tag estimated">미검증</span>'
+        : '<span class="tag estimated">증빙 없음</span>';
+
       return '<tr>' +
         '<td><span class="serial">' + escapeHtml(c.serial) + '</span></td>' +
-        '<td>' + escapeHtml(c.issuer) + '</td>' +
-        '<td class="r">' + fmt(c.amount, 0) + ' kg</td>' +
-        '<td class="r">' + fmt(c.used, 0) + ' kg</td>' +
-        '<td class="r">' + fmt(c.amount - c.used, 0) + ' kg</td>' +
-        '<td><span class="use-track"><span class="use-fill" style="width:' + pct.toFixed(1) + '%"></span></span>' +
-            '<span class="num">' + fmt(pct, 0) + '%</span></td>' +
+        '<td>' + escapeHtml(c.registry) + '<br><span class="lock">' + escapeHtml(c.issuer) + '</span></td>' +
+        '<td class="r">' + c.qty + ' 크레딧<br><span class="lock">' +
+          fmt(c.qty * CREDIT_KG, 0) + ' kg</span></td>' +
+        '<td class="r">' + c.vintage + '</td>' +
         '<td>' + escapeHtml(c.issued) + '</td>' +
-        '<td><span class="st ok">' + escapeHtml(c.status) + '</span></td>' +
+        '<td><span class="st ' + s.cls + '">' + s.label + '</span>' +
+            '<span class="lock">' + s.note + '</span></td>' +
+        '<td>' + acted + '<br><span class="lock">' + proof + '</span></td>' +
       '</tr>';
     }).join('');
 
     el('ledger').innerHTML = '' +
       '<div class="tbl-scroll"><table class="ledger">' +
         '<thead><tr>' +
-          '<th>일련번호</th><th>발행처</th><th style="text-align:right">인증량</th>' +
-          '<th style="text-align:right">소진</th><th style="text-align:right">잔여</th>' +
-          '<th>소진율</th><th>발행일</th><th>상태</th>' +
+          '<th>일련번호</th><th>등록부 · 발행처</th><th style="text-align:right">수량</th>' +
+          '<th style="text-align:right">Vintage</th><th>발행일</th><th>상태</th><th>처리일 · 증빙</th>' +
         '</tr></thead><tbody>' + rows + '</tbody>' +
       '</table></div>' +
+
       '<div class="ledger-foot">' +
-        '<div><span>총 인증량</span><strong>' + fmt(total, 0) + ' kg</strong></div>' +
-        '<div><span>누적 소진</span><strong>' + fmt(used, 0) + ' kg</strong></div>' +
-        '<div><span>잔여 크레딧</span><strong style="color:var(--offset)">' + fmt(total - used, 0) + ' kg</strong></div>' +
-        '<div><span>당월 적용 상쇄</span><strong>' + fmt(b.offset) + ' kg</strong></div>' +
+        '<div><span>보유(미소각)</span><strong>' + d.credits.held + ' 크레딧</strong></div>' +
+        '<div><span>이전</span><strong>' + d.credits.transferred + ' 크레딧</strong></div>' +
+        '<div><span>소각 = 상쇄량</span><strong style="color:var(--offset)">' +
+          d.credits.retired + ' 크레딧 · ' + fmt(d.offsetKg, 0) + ' kg</strong></div>' +
+        '<div><span>배출량 반영</span><strong style="color:var(--emit)">차감 없음</strong></div>' +
       '</div>' +
+
       '<div class="split-note">' +
-        '<b>감축분 −' + fmt(b.reduced) + ' kgCO₂eq</b> (전월 동기 ' + fmt(b.prevSamePeriod) + ' → 당월 ' + fmt(b.emitted) + ')는 ' +
-        '위 상쇄 원장과 <b>별개로 관리</b>합니다. 감축은 배출을 줄인 것이고 상쇄는 외부 크레딧을 확보한 것이므로, ' +
-        '두 값을 합산하면 이중계산이 됩니다.' +
+        '<b>소각(Retirement)한 크레딧이 상쇄량이며, 배출량에서 차감하지 않습니다.</b> ' +
+        '소각은 되돌릴 수 없고 같은 일련번호를 다른 주체가 다시 사용할 수 없습니다 — 이중계산 방지의 근거입니다. ' +
+        '전월 동기 대비 감축분(' + signed(-b.reduced) + ' kgCO₂eq)은 배출을 실제로 줄인 결과이므로 ' +
+        '상쇄와도 합산하지 않습니다. ' +
+        '<b>소각 여부는 자동 검증되지 않습니다</b> — ETRS 배출권등록부와 상쇄등록부(ORS)는 로그인 전용으로 ' +
+        '공개 API가 없어, 위 상태는 등록부 증빙 문서를 근거로 입력한 값이며 전부 <span class="tag estimated">미검증</span>으로 표기합니다.' +
       '</div>';
 
-    el('certCount').textContent = DATA.certs.length + '건';
-    el('certTotal').textContent = fmt(total, 0) + ' kgCO₂eq';
+    el('certCount').textContent = d.creditTotal + ' 크레딧 (' + DATA.credits.length + '건)';
+    el('certTotal').textContent = d.credits.retired + ' 크레딧 · ' + fmt(d.offsetKg, 0) + ' kg';
   }
 
   /* ── init ───────────────────────────────────── */
   function init() {
     renderLive();
     renderHero();
-    renderMirror();
+    renderEmitChart();
     renderKpi();
     renderGoal();
     renderDonut();
     renderTariff();
     initCalculator();
-    renderStandby();
-    renderBench();
     renderLedger();
   }
 
