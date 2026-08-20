@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>디바이스 주변 산림 면적</title>
+<link rel="stylesheet" href="assets/sidebar.css">
+<style>
+  :root{
+    --navy:#0f2a44;
+    --navy-soft:#1c4266;
+    --green:#127a4b;
+    --green-bright:#1fb865;
+    --line:#e2e8ef;
+    --bg:#f4f6f9;
+    --card:#ffffff;
+    --text:#12202e;
+    --muted:#6b7c8f;
+    --radius:14px;
+
+    --warn:#a8762b;
+    --warn-soft:#fdf7ea;
+    --warn-line:#eedfba;
+    --emit:#c0392b;
+    --offset:#127a4b;
+    --offset-soft:#eef7f1;
+    --offset-line:#cfe6da;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:30px 20px 64px; background:var(--bg); color:var(--text);
+    font-family:"Pretendard","Noto Sans KR",-apple-system,BlinkMacSystemFont,"Malgun Gothic",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1000px; margin:0 auto}
+
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    overflow:hidden; position:relative; margin-bottom:18px;
+    box-shadow:0 1px 2px rgba(15,42,68,.04), 0 12px 32px -12px rgba(15,42,68,.16);
+  }
+  .card::before{
+    content:""; display:block; height:3px;
+    background:linear-gradient(90deg,var(--navy) 0%,var(--green) 55%,var(--green-bright) 100%);
+  }
+  .card-head{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:16px;
+    padding:19px 22px 15px; border-bottom:1px solid var(--line);
+  }
+  .card-title{margin:0; font-size:15.5px; font-weight:700; letter-spacing:-.02em}
+  .card-sub{margin:5px 0 0; font-size:12px; color:var(--muted); letter-spacing:-.01em; line-height:1.5}
+  .card-body{padding:20px 22px}
+
+  .pill{
+    display:flex; align-items:center; gap:7px; flex-shrink:0;
+    font-size:11.5px; color:var(--muted); background:#f6f7f9;
+    border:1px solid var(--line); border-radius:99px; padding:5px 11px 5px 9px; white-space:nowrap;
+  }
+  .pill.warn{background:var(--warn-soft); border-color:var(--warn-line)}
+  .pill.warn strong{color:var(--warn)}
+  .pill strong{color:var(--navy-soft); font-weight:600}
+
+  .dot{width:7px; height:7px; border-radius:50%; background:var(--green-bright); flex-shrink:0}
+  .dot.off{background:#b7c2cd}
+
+  .tag{font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; white-space:nowrap}
+  .tag.measured{color:var(--navy-soft); background:#eef3f8; border:1px solid #d8e3ee}
+  .tag.estimated{color:var(--warn); background:var(--warn-soft); border:1px solid var(--warn-line)}
+
+  .page-head{
+    display:flex; justify-content:space-between; align-items:flex-end; gap:20px;
+    margin-bottom:18px; flex-wrap:wrap;
+  }
+  .page-head h1{
+    margin:0; font-size:21px; font-weight:700; letter-spacing:-.03em;
+    display:flex; align-items:center; gap:9px;
+  }
+  .page-head h1 em{
+    font-style:normal; font-size:10px; font-weight:700; letter-spacing:.08em; color:#8a6d1f;
+    background:#fdf5e0; border:1px solid #f0dfae; padding:3px 7px; border-radius:4px;
+  }
+  .page-head p{margin:6px 0 0; font-size:12.5px; color:var(--muted)}
+
+  /* ── 디바이스 선택 ─────────────────────────── */
+  .dev-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:11px}
+  .dev{
+    text-align:left; padding:13px 15px; border-radius:11px; cursor:pointer;
+    background:#fbfcfd; border:1px solid var(--line); font-family:inherit;
+    transition:background .15s, border-color .15s, transform .1s;
+  }
+  .dev:hover{background:#f2f7f4; border-color:#c9e5d6; transform:translateY(-1px)}
+  .dev.on{background:var(--navy); border-color:var(--navy)}
+  .dev.on .dev-id, .dev.on .dev-loc{color:#fff}
+  .dev.on .dev-xy{color:#9fc0d8}
+  .dev-id{
+    font-family:ui-monospace,"SFMono-Regular",Consolas,monospace;
+    font-size:12px; font-weight:700; color:var(--navy);
+  }
+  .dev-loc{font-size:12.5px; font-weight:600; color:var(--navy-soft); margin-top:5px}
+  .dev-xy{
+    font-family:ui-monospace,"SFMono-Regular",Consolas,monospace;
+    font-size:10.5px; color:var(--muted); margin-top:5px;
+  }
+
+  .radius-row{
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    margin-top:16px; padding:13px 15px; border-radius:10px;
+    background:#f8fafc; border:1px solid var(--line);
+  }
+  .radius-row label{font-size:12px; color:var(--muted); font-weight:600}
+  .radius-row input[type=range]{flex:1; min-width:160px; accent-color:var(--green)}
+  .radius-v{font-size:14px; font-weight:700; font-variant-numeric:tabular-nums; min-width:78px; text-align:right}
+
+  /* ── 결과 ──────────────────────────────────── */
+  .result{
+    display:flex; align-items:flex-end; gap:26px; flex-wrap:wrap;
+    padding:20px 22px; border-radius:12px;
+    background:var(--offset-soft); border:1px solid var(--offset-line);
+  }
+  .result-main b{
+    display:block; font-size:46px; font-weight:700; letter-spacing:-.045em;
+    line-height:1; color:var(--green);
+  }
+  .result-main span{display:block; font-size:12.5px; color:var(--muted); font-weight:600; margin-top:8px}
+  .result-alt{display:flex; gap:24px; flex-wrap:wrap; margin-left:auto}
+  .result-alt div{text-align:right}
+  .ra-k{font-size:11px; color:var(--muted)}
+  .ra-v{font-size:17px; font-weight:700; letter-spacing:-.025em; font-variant-numeric:tabular-nums}
+
+  .compare{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px}
+  .cmp{padding:14px 16px; border-radius:11px; background:#fbfcfd; border:1px solid var(--line)}
+  .cmp.pick{background:#f2f7f4; border-color:#c9e5d6}
+  .cmp-k{font-size:11.5px; color:var(--muted); display:flex; align-items:center; gap:7px; flex-wrap:wrap}
+  .cmp-v{font-size:24px; font-weight:700; letter-spacing:-.035em; margin-top:8px; font-variant-numeric:tabular-nums}
+  .cmp-n{font-size:11px; color:#a3b0bd; margin-top:5px; line-height:1.5}
+
+  .diff{
+    display:flex; align-items:center; gap:9px; margin-top:14px; padding:11px 14px;
+    border-radius:10px; font-size:12.5px;
+    background:var(--warn-soft); border:1px solid var(--warn-line); color:#7a5716;
+  }
+  .diff b{font-weight:700}
+
+  .krow{display:flex; justify-content:space-between; gap:12px; padding:6px 0; font-size:12.5px}
+  .krow span{color:var(--muted)}
+  .krow strong{font-weight:700; font-variant-numeric:tabular-nums}
+  .krows{margin-top:16px; border-top:1px solid var(--line); padding-top:10px}
+
+  /* ── 지도 ──────────────────────────────────── */
+  .mapbox{
+    position:relative; height:300px; border-radius:12px; overflow:hidden;
+    background:repeating-linear-gradient(45deg,#f4f7fa 0 12px,#eef2f6 12px 24px);
+    border:1px dashed #c9d4de; display:flex; align-items:center; justify-content:center; text-align:center;
+  }
+  .mapbox-in{max-width:430px; padding:20px}
+  .mapbox-in h3{margin:0 0 8px; font-size:14px; font-weight:700; color:var(--navy)}
+  .mapbox-in p{margin:0; font-size:12px; color:var(--muted); line-height:1.6}
+  .layer-list{margin-top:14px; display:flex; flex-direction:column; gap:5px; text-align:left}
+  .layer{
+    display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--muted);
+    background:#fff; border:1px solid var(--line); border-radius:8px; padding:7px 10px;
+  }
+
+  /* ── 산출 단계 ─────────────────────────────── */
+  .method{margin-bottom:18px}
+  .method:last-child{margin-bottom:0}
+  .method-h{
+    display:flex; align-items:center; gap:9px; font-size:13px; font-weight:700;
+    color:var(--navy); margin-bottom:10px; flex-wrap:wrap;
+  }
+  .bstep{display:flex; gap:11px; padding:8px 0; font-size:12px; line-height:1.6}
+  .bstep-n{
+    width:19px; height:19px; border-radius:5px; flex-shrink:0; margin-top:1px;
+    background:#e8eef4; color:var(--navy-soft); font-size:10.5px; font-weight:700;
+    display:grid; place-items:center;
+  }
+  .bstep code{
+    font-family:ui-monospace,"SFMono-Regular",Consolas,monospace; font-size:11.5px;
+    background:#eef1f5; padding:1px 5px; border-radius:4px; color:var(--navy);
+  }
+  .bstep-t{color:var(--muted)}
+  .bstep-t b{color:var(--text); font-weight:700}
+
+  /* ── 필요 API ──────────────────────────────── */
+  .api{display:flex; flex-direction:column; gap:11px}
+  .api-row{
+    display:flex; align-items:flex-start; gap:12px; padding:14px 16px; border-radius:11px;
+    background:#fbfcfd; border:1px solid var(--line); font-size:12.5px;
+  }
+  .api-row.need{background:var(--warn-soft); border-color:var(--warn-line)}
+  .api-b{flex:1; min-width:0}
+  .api-n{font-weight:700; display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+  .api-d{color:var(--muted); font-size:11.5px; line-height:1.6; margin-top:5px}
+  .api-d code{
+    font-family:ui-monospace,"SFMono-Regular",Consolas,monospace; font-size:11px;
+    background:#eef1f5; padding:1px 5px; border-radius:4px; color:var(--navy);
+  }
+  .api-meta{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+  .chip{
+    font-size:10.5px; font-weight:600; padding:3px 8px; border-radius:99px;
+    background:#eef1f5; color:var(--navy-soft); white-space:nowrap;
+  }
+  .chip.free{background:var(--offset-soft); color:var(--offset)}
+  .chip.pay{background:#fdf0ee; color:var(--emit)}
+  .chip.srv{background:#eef3f8; color:var(--navy-soft)}
+
+  .banner{
+    display:flex; align-items:flex-start; gap:9px; margin-top:16px; padding:12px 14px;
+    border-radius:10px; font-size:12.5px; line-height:1.55;
+    background:var(--warn-soft); border:1px solid var(--warn-line); color:#7a5716;
+  }
+  .banner b{font-weight:700}
+  .note{margin:12px 2px 0; font-size:11.5px; color:#a3b0bd; line-height:1.55}
+  .note b{color:var(--muted)}
+
+  .foot{margin-top:22px; text-align:center; font-size:11.5px; color:#a3b0bd; line-height:1.7}
+  .foot b{color:var(--muted)}
+
+  @media (max-width:900px){
+    .dev-grid{grid-template-columns:1fr}
+    .compare{grid-template-columns:1fr}
+    .result-alt{margin-left:0; width:100%}
+  }
+  @media (max-width:640px){
+    body{padding:22px 14px 48px}
+    .card-head{flex-direction:column; gap:11px}
+    .page-head h1{font-size:18px}
+    .result-main b{font-size:36px}
+    .result-alt div{text-align:left}
+  }
+</style>
+</head>
+<body class="wu-has-sidebar">
+<div class="wrap">
+
+  <div class="page-head">
+    <div>
+      <h1>디바이스 주변 산림 면적 <em>PROTOTYPE</em></h1>
+      <p>계측 디바이스의 GPS 좌표를 중심으로, 그 디바이스가 속한 숲의 면적을 산출합니다.</p>
+    </div>
+    <div class="pill warn" id="statePill"></div>
+  </div>
+
+  <!-- 1. 디바이스 선택 -->
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2 class="card-title">디바이스 선택</h2>
+        <p class="card-sub">라즈베리파이 GPS 좌표(WGS84)를 기준점으로 씁니다</p>
+      </div>
+      <div class="pill" id="devPill"></div>
+    </div>
+    <div class="card-body">
+      <div class="dev-grid" id="devGrid"></div>
+      <div class="radius-row">
+        <label for="radius">탐색 반경</label>
+        <input type="range" id="radius" min="100" max="2000" step="100" value="500">
+        <span class="radius-v" id="radiusV">500 m</span>
+      </div>
+      <p class="note">반경은 위성 방식에서 <b>연결영역을 추적할 범위</b>입니다. 숲이 반경 밖으로 이어지면
+        면적이 잘리므로, 결과가 반경에 닿으면 경고가 표시됩니다.</p>
+    </div>
+  </section>
+
+  <!-- 2. 결과 -->
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2 class="card-title">산림 면적</h2>
+        <p class="card-sub">디바이스가 포함된 산림 폴리곤 · 연결영역의 면적입니다</p>
+      </div>
+      <span class="tag estimated">미연결 · 목업</span>
+    </div>
+    <div class="card-body" id="resultCard"></div>
+  </section>
+
+  <!-- 3. 지도 -->
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2 class="card-title">지도</h2>
+        <p class="card-sub">인증키를 넣으면 디바이스 마커 · 탐색 반경 · 산림 폴리곤이 표시됩니다</p>
+      </div>
+      <div class="pill warn"><span class="dot off"></span>인증키 <strong>미등록</strong></div>
+    </div>
+    <div class="card-body">
+      <div class="mapbox">
+        <div class="mapbox-in">
+          <h3>지도 API 연동 대기</h3>
+          <p>인증키가 등록되면 선택한 디바이스로 지도가 이동하고 아래 레이어가 올라갑니다.</p>
+          <div class="layer-list">
+            <div class="layer"><span class="dot off"></span>배경지도 · 항공영상 — 브이월드</div>
+            <div class="layer"><span class="dot off"></span>디바이스 마커 + 탐색 반경 원</div>
+            <div class="layer"><span class="dot off"></span><b>산림 폴리곤</b> — 임상도 교차 결과</div>
+            <div class="layer"><span class="dot off"></span>위성 연결영역 — Sentinel-2 분류 마스크</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 산출 방식 -->
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2 class="card-title">산출 방식</h2>
+        <p class="card-sub">두 가지 방법이 있고 결과가 다릅니다. 무엇을 근거로 쓸지 정해야 합니다</p>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="method">
+        <div class="method-h">방식 A — 임상도 폴리곤 조회 <span class="tag measured">권장 · 근거 명확</span></div>
+        <div class="bstep"><span class="bstep-n">1</span><span class="bstep-t">
+          디바이스 좌표 <code>EPSG:4326</code> → <code>EPSG:5179</code> 변환 (임상도 좌표계)
+        </span></div>
+        <div class="bstep"><span class="bstep-n">2</span><span class="bstep-t">
+          임상도에서 그 점을 포함하는 폴리곤을 찾습니다 — <code>ST_Contains(geom, point)</code>
+        </span></div>
+        <div class="bstep"><span class="bstep-n">3</span><span class="bstep-t">
+          찾은 폴리곤의 면적이 곧 <b>디바이스가 있는 숲의 면적</b>입니다.
+          같은 임상·수종으로 판독된 하나의 임반이 곧 "그 숲"입니다
+        </span></div>
+        <div class="bstep"><span class="bstep-n">4</span><span class="bstep-t">
+          인접 폴리곤까지 하나의 숲으로 볼지 결정합니다 — <code>ST_Touches</code> 로 연결된
+          산림 폴리곤을 병합하면 면적이 크게 늘어납니다
+        </span></div>
+      </div>
+
+      <div class="method">
+        <div class="method-h">방식 B — 위성 연결영역 추적 <span class="tag estimated">최신성 확보용</span></div>
+        <div class="bstep"><span class="bstep-n">1</span><span class="bstep-t">
+          디바이스 좌표 중심 반경만큼 Sentinel-2 타일을 잘라옵니다 (<code>EPSG:32652</code>)
+        </span></div>
+        <div class="bstep"><span class="bstep-n">2</span><span class="bstep-t">
+          NDVI = <code>(B08 − B04) / (B08 + B04)</code> 계산 후 임계값으로 산림 마스크 생성
+        </span></div>
+        <div class="bstep"><span class="bstep-n">3</span><span class="bstep-t">
+          디바이스가 놓인 픽셀에서 시작해 <b>연결된 산림 픽셀 덩어리</b>를 넓혀 나갑니다
+          (connected component labeling)
+        </span></div>
+        <div class="bstep"><span class="bstep-n">4</span><span class="bstep-t">
+          픽셀 수 × 100 m² = 면적. 10 m 격자이므로 <b>최소 단위가 100 m²</b>이고
+          경계는 픽셀 단위로 각집니다
+        </span></div>
+      </div>
+
+      <div class="banner"><span>ⓘ</span><span>
+        <b>임상도가 기준, 위성이 검증입니다.</b> 임상도는 국가가 판독한 확정 자료라 근거로 쓸 수 있지만
+        제작 시점이 몇 년 전일 수 있습니다. 위성은 최신이지만 그림자·계절·혼합픽셀 영향을 받습니다.
+        두 값이 크게 다르면 <b>벌채·산불·개발로 임상도가 낡았다는 신호</b>로 읽는 것이 맞습니다.
+      </span></div>
+    </div>
+  </section>
+
+  <!-- 5. 필요한 API / 서버 -->
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2 class="card-title">필요한 API · 서버</h2>
+        <p class="card-sub">이 기능 하나를 돌리기 위해 필요한 것 전부입니다</p>
+      </div>
+      <div class="pill warn"><span class="dot off"></span>준비 <strong>0 / 4</strong></div>
+    </div>
+    <div class="card-body" id="apiCard"></div>
+  </section>
+
+  <p class="foot">
+    본 화면의 면적 수치는 구조 검토용 <b>목업</b>입니다. 임상도 공간질의와 Sentinel-2 처리가
+    연결되면 실제 값으로 대체됩니다.
+  </p>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ═══════════════════════════════════════════════════════
+     디바이스 — 실제 연동 시 이 배열만 계측 파이프라인 응답으로 교체.
+     forestHaMap  : 임상도 폴리곤 조회 결과 (방식 A)
+     forestHaSat  : 위성 연결영역 결과 (방식 B)
+     reachedEdge  : 연결영역이 탐색 반경 경계에 닿았는지
+     ═══════════════════════════════════════════════════════ */
+  var DEVICES = [
+    { id:'RPI-01', place:'정문 녹지',        lat:35.94831, lng:126.95752,
+      forestHaMap: 1.8,  forestHaSat: 1.5,  canopy:'침엽수림', mapYear:2021, reachedEdge:false },
+    { id:'RPI-02', place:'주차장 완충녹지',  lat:35.94907, lng:126.95884,
+      forestHaMap: 0.6,  forestHaSat: 0.4,  canopy:'활엽수림', mapYear:2021, reachedEdge:false },
+    { id:'RPI-03', place:'후문 사면',        lat:35.95024, lng:126.96013,
+      forestHaMap:27.4,  forestHaSat:31.2,  canopy:'혼효림',   mapYear:2021, reachedEdge:true  }
+  ];
+
+  var PIXEL_M2 = 100;          // Sentinel-2 10m × 10m
+  var current  = DEVICES[2];   // 기본: 사면 (숲이 이어지는 사례)
+  var radiusM  = 500;
+
+  var APIS = [
+    { name:'산림청 임상도 + 공간DB', role:'방식 A — 폴리곤 조회',
+      what:'임상도 SHP을 PostGIS에 적재하고 <code>ST_Contains</code> 로 조회하는 <b>자체 엔드포인트</b>가 필요합니다. 산림청은 파일만 주고 조회 API를 주지 않습니다.',
+      chips:['무료 (파일)','서버 필수','PostGIS 또는 GeoPackage'], need:true },
+    { name:'Copernicus Data Space', role:'방식 B — 위성 영상 · NDVI',
+      what:'계정 발급 후 <code>openEO</code> 로 서버측 연산을 돌리거나 <code>Sentinel Hub Process API</code> 로 타일을 받습니다. 브라우저에서 직접 처리할 수 없습니다.',
+      chips:['무료 쿼터','서버 필수','계정 발급 필요'], need:true },
+    { name:'브이월드 2D지도', role:'지도 표시',
+      what:'배경지도·항공영상. 프런트에서 직접 호출하고 <b>도메인 화이트리스트</b>로 보호합니다. 프록시를 끼우면 동작하지 않습니다.',
+      chips:['무료','프런트 직접','도메인 등록'], need:true },
+    { name:'좌표 변환', role:'전 단계 공통',
+      what:'GPS <code>EPSG:4326</code> · 임상도 <code>EPSG:5179</code> · Sentinel-2 <code>EPSG:32652</code> 가 모두 다릅니다. 프런트는 <code>proj4js</code>, 서버는 PostGIS <code>ST_Transform</code> 을 씁니다.',
+      chips:['무료 · 오픈소스','라이브러리'], need:false }
+  ];
+
+  function el(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+  function fmt(n, d) {
+    var k = typeof d === 'number' ? d : (Math.abs(n) >= 1000 ? 0 : 1);
+    return Number(n).toLocaleString('ko-KR', { minimumFractionDigits:k, maximumFractionDigits:k });
+  }
+
+  /* ── 디바이스 버튼 ─────────────────────────── */
+  function renderDevices() {
+    el('devPill').innerHTML = '<span>계측 노드 <strong>' + DEVICES.length + '</strong>대</span>';
+    el('devGrid').innerHTML = DEVICES.map(function (d) {
+      return '<button type="button" class="dev' + (d.id === current.id ? ' on' : '') +
+        '" data-id="' + d.id + '" aria-pressed="' + (d.id === current.id) + '">' +
+        '<div class="dev-id">' + esc(d.id) + '</div>' +
+        '<div class="dev-loc">' + esc(d.place) + '</div>' +
+        '<div class="dev-xy">' + d.lat.toFixed(5) + ', ' + d.lng.toFixed(5) + '</div>' +
+      '</button>';
+    }).join('');
+
+    Array.prototype.forEach.call(el('devGrid').querySelectorAll('.dev'), function (b) {
+      b.addEventListener('click', function () {
+        current = DEVICES.filter(function (d) { return d.id === b.getAttribute('data-id'); })[0];
+        renderDevices();
+        renderResult();
+      });
+    });
+  }
+
+  /* ── 결과 ──────────────────────────────────── */
+  function renderResult() {
+    var d = current;
+    var ha  = d.forestHaMap;                 // 기준값은 임상도
+    var m2  = ha * 10000;
+    var px  = Math.round(d.forestHaSat * 10000 / PIXEL_M2);
+    var gap = d.forestHaMap > 0 ? (d.forestHaSat - d.forestHaMap) / d.forestHaMap * 100 : 0;
+    var edgeWarn = d.reachedEdge && (Math.sqrt(d.forestHaSat * 10000 / Math.PI) > radiusM * 0.85);
+
+    el('statePill').innerHTML = '<span class="dot off"></span>' + esc(d.id) +
+      ' · 반경 <strong>' + fmt(radiusM, 0) + ' m</strong>';
+
+    el('resultCard').innerHTML =
+      '<div class="result">' +
+        '<div class="result-main">' +
+          '<b>' + fmt(ha, 2) + '</b>' +
+          '<span>ha · ' + esc(d.id) + ' 가 속한 숲</span>' +
+        '</div>' +
+        '<div class="result-alt">' +
+          '<div><div class="ra-k">제곱미터</div><div class="ra-v">' + fmt(m2, 0) + ' m²</div></div>' +
+          '<div><div class="ra-k">임상</div><div class="ra-v">' + esc(d.canopy) + '</div></div>' +
+          '<div><div class="ra-k">위성 픽셀</div><div class="ra-v">' + fmt(px, 0) + ' px</div></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="compare">' +
+        '<div class="cmp pick">' +
+          '<div class="cmp-k">방식 A · 임상도 폴리곤 <span class="tag measured">기준</span></div>' +
+          '<div class="cmp-v" style="color:var(--green)">' + fmt(d.forestHaMap, 2) + ' ha</div>' +
+          '<div class="cmp-n">' + d.mapYear + '년 판독 · 국가 확정 자료</div>' +
+        '</div>' +
+        '<div class="cmp">' +
+          '<div class="cmp-k">방식 B · 위성 연결영역 <span class="tag estimated">참고</span></div>' +
+          '<div class="cmp-v" style="color:var(--navy-soft)">' + fmt(d.forestHaSat, 2) + ' ha</div>' +
+          '<div class="cmp-n">Sentinel-2 10 m 격자 · ' + fmt(px, 0) + ' 픽셀</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="diff"><span>ⓘ</span><span>' +
+        '두 방식 차이 <b>' + (gap >= 0 ? '+' : '') + gap.toFixed(1) + '%</b> — ' +
+        (Math.abs(gap) < 10
+          ? '오차 범위 안입니다. 임상도 값을 그대로 쓰면 됩니다.'
+          : gap > 0
+            ? '위성이 더 넓게 잡았습니다. 임상도 판독 이후 <b>수관이 확장</b>됐거나, 인접 녹지가 위성에서 하나로 이어져 보이는 경우입니다.'
+            : '위성이 더 좁게 잡았습니다. 임상도 판독 이후 <b>벌채·산불·개발</b>이 있었는지 확인해야 합니다.') +
+      '</span></div>' +
+
+      (edgeWarn
+        ? '<div class="diff" style="background:#fdf0ee; border-color:#f5d7d2; color:#8a2c20">' +
+            '<span>⚠</span><span><b>숲이 탐색 반경 밖으로 이어집니다.</b> 현재 반경 ' +
+            fmt(radiusM, 0) + ' m 로는 면적이 잘립니다 — 반경을 늘려 다시 산출해야 실제 면적이 나옵니다.' +
+          '</span></div>'
+        : '') +
+
+      '<div class="krows">' +
+        '<div class="krow"><span>디바이스 좌표 (WGS84)</span><strong>' +
+          d.lat.toFixed(5) + ', ' + d.lng.toFixed(5) + '</strong></div>' +
+        '<div class="krow"><span>탐색 반경</span><strong>' + fmt(radiusM, 0) + ' m · 최대 탐색 면적 ' +
+          fmt(Math.PI * radiusM * radiusM / 10000, 1) + ' ha</strong></div>' +
+        '<div class="krow"><span>위성 최소 단위</span><strong>' + PIXEL_M2 + ' m² (10 × 10 m)</strong></div>' +
+        '<div class="krow"><span>면적 계산</span><strong>구면 면적 또는 EPSG:5179 투영</strong></div>' +
+      '</div>' +
+
+      '<p class="note">이 면적은 <b>디바이스가 놓인 숲 전체</b>이며, 우리가 관리하는 구역 면적과 다릅니다. ' +
+        '숲이 사업장 경계를 넘어 이어지면 그 전체가 잡히므로, 관리 책임 범위와 혼동하면 안 됩니다.</p>';
+  }
+
+  /* ── 반경 슬라이더 ─────────────────────────── */
+  function initRadius() {
+    var r = el('radius');
+    function sync() {
+      radiusM = parseInt(r.value, 10);
+      el('radiusV').textContent = fmt(radiusM, 0) + ' m';
+      renderResult();
+    }
+    r.addEventListener('input', sync);
+    sync();
+  }
+
+  /* ── 필요한 API ────────────────────────────── */
+  function renderApis() {
+    el('apiCard').innerHTML = '<div class="api">' + APIS.map(function (a) {
+      return '<div class="api-row' + (a.need ? ' need' : '') + '">' +
+        '<span class="dot off" style="margin-top:5px"></span>' +
+        '<span class="api-b">' +
+          '<span class="api-n">' + esc(a.name) +
+            ' <span class="tag estimated">' + esc(a.role) + '</span></span>' +
+          '<span class="api-d">' + a.what + '</span>' +
+          '<span class="api-meta">' + a.chips.map(function (c, i) {
+            var cls = i === 0 ? (c.indexOf('무료') === 0 ? 'free' : 'pay') : 'srv';
+            return '<span class="chip ' + cls + '">' + esc(c) + '</span>';
+          }).join('') + '</span>' +
+        '</span>' +
+      '</div>';
+    }).join('') + '</div>' +
+    '<div class="banner"><span>ⓘ</span><span>' +
+      '<b>Vercel 정적 배포만으로는 이 기능이 돌아가지 않습니다.</b> 임상도 공간질의와 위성 처리는 ' +
+      '상시 서버와 디스크가 필요합니다. 지금 구조에 붙이려면 별도 인스턴스에 PostGIS를 올리고, ' +
+      '웹에서는 <code>/api/forest-area?lat=&lng=&radius=</code> 형태의 엔드포인트 하나만 호출하는 방식이 ' +
+      '가장 단순합니다.' +
+    '</span></div>';
+  }
+
+  renderDevices();
+  renderApis();
+  initRadius();
+})();
+</script>
+<script src="assets/sidebar.js" defer></script>
+</body>
+</html>

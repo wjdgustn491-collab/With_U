@@ -10,7 +10,8 @@
   var ICON = {
     scale:  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M7 7l-4 8a4 4 0 0 0 8 0L7 7Zm10 0-4 8a4 4 0 0 0 8 0l-4-8Z"/><path d="M6 4h12"/></svg>',
     leaf:   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20c0-8 5-13 16-14 0 11-5 15-11 15-2 0-5-.4-5-1Z"/><path d="M9 15c2-3 5-5 9-6"/></svg>',
-    shield: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5.5c0 4.6-3 7.9-7 9.5-4-1.6-7-4.9-7-9.5V6l7-3Z"/><path d="M9 12l2.2 2.2L15.5 10"/></svg>'
+    shield: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5.5c0 4.6-3 7.9-7 9.5-4-1.6-7-4.9-7-9.5V6l7-3Z"/><path d="M9 12l2.2 2.2L15.5 10"/></svg>',
+    map:    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6.5v13L9 17l6 2.5 6-2.5v-13L15 6.5 9 4Z"/><path d="M9 4v13M15 6.5v13"/></svg>'
   };
 
   /* 세 개의 서비스. 메뉴 추가는 이 배열만 고치면 된다. */
@@ -32,6 +33,12 @@
       icon: 'shield',
       title: '공식 인증서 검증',
       desc: 'KEITI · KCCI 공식 오픈API 조회'
+    },
+    {
+      href: 'forest-map.html',
+      icon: 'map',
+      title: '디바이스 주변 산림 면적',
+      desc: '디바이스 좌표 기준 숲 면적 산출'
     }
   ];
 

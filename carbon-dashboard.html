@@ -225,52 +225,6 @@
   .kpi-spark i{flex:1; border-radius:2px 2px 0 0; background:currentColor; opacity:.22}
   .kpi-spark i:last-child{opacity:.75}
 
-  /* ── 그리드 ────────────────────────────────── */
-  .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px}
-
-  /* ── P1-1 목표 페이스 ──────────────────────── */
-  .big-stat{display:flex; align-items:baseline; gap:8px}
-  .big-stat b{font-size:29px; font-weight:700; letter-spacing:-.04em; line-height:1}
-  .big-stat span{font-size:12px; color:var(--muted); font-weight:600}
-  .stat-note{font-size:12px; color:var(--muted); line-height:1.6; margin-top:6px}
-  .stat-note b{color:var(--text); font-weight:700}
-
-  .goal-bar{position:relative; height:12px; border-radius:99px; background:#eef1f5; margin:18px 0 9px}
-  .goal-fill{height:100%; border-radius:99px; width:0; transition:width .9s cubic-bezier(.2,.7,.3,1)}
-  .goal-mark{position:absolute; top:-5px; width:2px; height:22px; background:var(--navy); border-radius:2px}
-  .goal-legend{display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted)}
-  .goal-rows{margin-top:15px; border-top:1px solid var(--line); padding-top:11px}
-  .krow{display:flex; justify-content:space-between; gap:12px; padding:6px 0; font-size:12.5px}
-  .krow span{color:var(--muted)}
-  .krow strong{font-weight:700; font-variant-numeric:tabular-nums; text-align:right}
-
-  /* ── 도넛 ──────────────────────────────────── */
-  .donut-wrap{display:flex; flex-direction:column; align-items:center; gap:14px}
-  .donut{width:168px; height:168px; flex-shrink:0}
-  .donut circle{transition:stroke-width .18s, opacity .18s, stroke-dasharray .8s cubic-bezier(.2,.7,.3,1)}
-  .donut-c{fill:var(--text); font-family:inherit; font-weight:700; font-size:21px; letter-spacing:-.03em}
-  .donut-u{fill:var(--muted); font-family:inherit; font-size:10px; font-weight:500}
-  .legend{width:100%; display:flex; flex-direction:column; gap:1px}
-  .leg{display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:7px;
-       font-size:12px; transition:background .15s}
-  .leg:hover{background:#f6f8fa}
-  .leg-sw{width:9px; height:9px; border-radius:2px; flex-shrink:0}
-  .leg-n{flex:1; font-weight:600; color:var(--navy-soft)}
-  .leg-p{font-weight:700; font-variant-numeric:tabular-nums}
-  .leg-v{color:var(--muted); font-size:11px; font-variant-numeric:tabular-nums; min-width:50px; text-align:right}
-
-  /* ── P1-2 누진제 ───────────────────────────── */
-  .tier-bar{display:flex; gap:4px; height:30px; margin:16px 0 8px}
-  .tier-seg{flex:1; border-radius:6px; position:relative; overflow:hidden;
-            background:#eef1f5; border:1px solid var(--line)}
-  .tier-seg i{position:absolute; top:0; bottom:0; left:0; width:0;
-              transition:width .9s cubic-bezier(.2,.7,.3,1)}
-  .tier-seg.t1 i{background:#8fd3ae}
-  .tier-seg.t2 i{background:#e0b95f}
-  .tier-seg.t3 i{background:#dd8d80}
-  .tier-labs{display:flex; gap:4px; font-size:10.5px; color:var(--muted)}
-  .tier-labs span{flex:1; text-align:center}
-
   /* ── 계산기 ────────────────────────────────── */
   .switch{display:flex; align-items:center; gap:9px; flex-shrink:0}
   .switch-label{font-size:12px; font-weight:600; color:var(--muted); transition:color .15s}
@@ -351,7 +305,6 @@
 
   .calc-note{margin:12px 2px 0; font-size:11.5px; color:#a3b0bd; line-height:1.55}
 
-
   /* ── P2-2 크레딧 보유 원장 ─────────────────── */
   .tbl-scroll{overflow-x:auto}
   table.ledger{width:100%; border-collapse:collapse; font-size:12.5px; min-width:660px}
@@ -399,7 +352,6 @@
 
   /* ── 반응형 ────────────────────────────────── */
   @media (max-width:1000px){
-    .row3{grid-template-columns:1fr}
     .kpi-grid{grid-template-columns:repeat(2,1fr)}
   }
   @media (max-width:640px){
@@ -431,7 +383,7 @@
     <div class="card-head">
       <div>
         <h2 class="card-title">배출 · 상쇄 현황</h2>
-        <p class="card-sub">좌측은 계측된 실제 배출량, 우측은 소각 확정된 상쇄량입니다. 둘을 뺀 순배출은 산출하지 않습니다</p>
+        <p class="card-sub">위 줄이 계측된 실제 배출량, 아래 줄이 소각 확정된 상쇄량입니다. 둘을 뺀 순배출은 산출하지 않습니다</p>
       </div>
       <div class="pill neutral" id="heroPeriod"></div>
     </div>
@@ -461,46 +413,6 @@
 
   <!-- P0-4 KPI -->
   <div class="kpi-grid" id="kpiGrid" style="margin-bottom:18px"></div>
-
-  <!-- P1-1 목표 / 도넛 / P1-2 누진제 -->
-  <div class="row3" style="margin-bottom:18px">
-
-    <section class="card">
-      <div class="card-head">
-        <div>
-          <h2 class="card-title">월 목표 · 페이스</h2>
-          <p class="card-sub">현재 속도로 월말에 도달할 값</p>
-        </div>
-      </div>
-      <div class="card-body" id="goal"></div>
-    </section>
-
-    <section class="card">
-      <div class="card-head">
-        <div>
-          <h2 class="card-title">배출원 분석</h2>
-          <p class="card-sub">당월 누적 배출 구성비</p>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="donut-wrap">
-          <svg class="donut" id="donut" viewBox="0 0 200 200" role="img" aria-label="배출원별 구성비 도넛 차트"></svg>
-          <div class="legend" id="legend"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="card-head">
-        <div>
-          <h2 class="card-title">한전 누진제 구간</h2>
-          <p class="card-sub">주택용 저압 · 하계(7~8월) 기준</p>
-        </div>
-      </div>
-      <div class="card-body" id="tariff"></div>
-    </section>
-
-  </div>
 
   <!-- 에너지 계산기 -->
   <section class="card" style="margin-bottom:18px">
@@ -639,18 +551,8 @@
         color:'var(--fp-nitrogen)', trend:[2.90,2.95,3.00,3.02,3.08,3.10] }
     ],
 
-    goal:      { monthly: 420 },                    // P1-1
-    tariff:    { kwh: 277, tiers: [300, 450] },     // P1-2 하계 주택용 저압
-
     manual:   { elec: 277, gas: 28.3 },
     autoSync: { elec: 291, gas: 30.1, meter: 'WITHU-RPI-0142', pulses: 291000 },
-
-    sources: [
-      { name:'전기',   value:132.4, color:'var(--fp-carbon)' },
-      { name:'난방',   value: 61.6, color:'var(--fp-water)' },
-      { name:'교통',   value: 55.0, color:'var(--fp-eco)' },
-      { name:'폐기물', value: 23.4, color:'var(--fp-nitrogen)' }
-    ],
 
     /* P2-2 탄소 크레딧 원장
        기본단위: 1 크레딧 = 1 tCO2e = 1,000 kgCO2eq (등록부 발행 단위)
@@ -703,23 +605,6 @@
 
   function signed(n, digits) {
     return (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n), digits);
-  }
-
-  /* 정수 백분율 — 최대잉여법으로 합계를 정확히 100%로 맞춤 */
-  function pctRound(values) {
-    var sum = values.reduce(function (a, v) { return a + v; }, 0);
-    if (sum <= 0) return values.map(function () { return 0; });
-
-    var raw   = values.map(function (v) { return (v / sum) * 100; });
-    var out   = raw.map(Math.floor);
-    var short = 100 - out.reduce(function (a, v) { return a + v; }, 0);
-
-    raw.map(function (v, i) { return { i:i, rem:v - Math.floor(v) }; })
-       .sort(function (a, b) { return b.rem - a.rem; })
-       .slice(0, short)
-       .forEach(function (o) { out[o.i] += 1; });
-
-    return out;
   }
 
   /* 파생값 — 저장하지 않고 매번 도출 (단일 진실 공급원 유지)
@@ -1004,139 +889,6 @@
     }).join('');
   }
 
-  /* ── P1-1 목표 페이스 ───────────────────────── */
-  function renderGoal() {
-    var d = derive(), g = DATA.goal, b = DATA.balance;
-    var spentPct = Math.min(100, (b.emitted / g.monthly) * 100);
-    var projPct  = Math.min(100, (d.projected / g.monthly) * 100);
-    var over     = d.projected > g.monthly;
-
-    el('goal').innerHTML = '' +
-      '<div class="big-stat">' +
-        '<b style="color:' + (over ? 'var(--emit)' : 'var(--offset)') + '">' + fmt(d.projected) + '</b>' +
-        '<span>kgCO₂eq 월말 예상</span>' +
-      '</div>' +
-      '<div class="stat-note">' +
-        (over
-          ? '⚠ 목표 <b>' + fmt(g.monthly, 0) + '</b> kg를 <b>' + fmt(d.projected - g.monthly) + '</b> kg 초과할 페이스입니다.'
-          : '목표 <b>' + fmt(g.monthly, 0) + '</b> kg 대비 <b>' + fmt(g.monthly - d.projected) + '</b> kg 여유가 있습니다.') +
-      '</div>' +
-
-      '<div class="goal-bar">' +
-        '<div class="goal-fill" id="goalFill" style="background:' +
-          (over ? 'linear-gradient(90deg,#e0b95f,#dd8d80)'
-                : 'linear-gradient(90deg,var(--green),var(--green-bright))') + '"></div>' +
-        '<div class="goal-mark" id="goalMark" title="월말 예상 위치"></div>' +
-      '</div>' +
-      '<div class="goal-legend"><span>현재 소진 ' + fmt(spentPct, 0) + '%</span>' +
-        '<span>목표 ' + fmt(g.monthly, 0) + ' kg</span></div>' +
-
-      '<div class="goal-rows">' +
-        '<div class="krow"><span>당월 누적 배출</span><strong>' + fmt(b.emitted) + ' kg</strong></div>' +
-        '<div class="krow"><span>일평균</span><strong>' + fmt(d.avgDaily) + ' kg/일</strong></div>' +
-        '<div class="krow"><span>남은 기간</span><strong>' + d.daysLeft + '일</strong></div>' +
-        '<div class="krow"><span>목표 달성 필요 일평균</span><strong>' +
-          fmt(Math.max(0, (g.monthly - b.emitted) / Math.max(1, d.daysLeft))) + ' kg/일</strong></div>' +
-      '</div>';
-
-    setTimeout(function () {
-      el('goalFill').style.width = spentPct + '%';
-      el('goalMark').style.left  = projPct + '%';
-    }, 80);
-  }
-
-  /* ── 도넛 ───────────────────────────────────── */
-  function renderDonut() {
-    var svg   = el('donut');
-    var total = DATA.sources.reduce(function (a, s) { return a + s.value; }, 0);
-    var R = 70, CX = 100, CY = 100, SW = 22;
-    var C = 2 * Math.PI * R;
-
-    var p = ['<circle cx="' + CX + '" cy="' + CY + '" r="' + R + '" fill="none" stroke="#eef1f5" stroke-width="' + SW + '"/>'];
-    var offset = 0;
-
-    DATA.sources.forEach(function (s, i) {
-      var len = (s.value / total) * C;
-      p.push('<circle class="seg" data-i="' + i + '" cx="' + CX + '" cy="' + CY + '" r="' + R + '" fill="none" ' +
-             'stroke="' + s.color + '" stroke-width="' + SW + '" ' +
-             'stroke-dasharray="0 ' + C.toFixed(2) + '" data-len="' + len.toFixed(2) + '" ' +
-             'stroke-dashoffset="' + (-offset).toFixed(2) + '" transform="rotate(-90 ' + CX + ' ' + CY + ')"/>');
-      offset += len;
-    });
-
-    p.push('<text class="donut-c" x="' + CX + '" y="' + (CY - 2) + '" text-anchor="middle">' + fmt(total) + '</text>');
-    p.push('<text class="donut-u" x="' + CX + '" y="' + (CY + 15) + '" text-anchor="middle">kgCO₂eq · 당월</text>');
-    svg.innerHTML = p.join('');
-
-    var segs = svg.querySelectorAll('.seg');
-    setTimeout(function () {
-      Array.prototype.forEach.call(segs, function (c) {
-        c.setAttribute('stroke-dasharray', c.getAttribute('data-len') + ' ' + C.toFixed(2));
-      });
-    }, 120);
-
-    var pcts = pctRound(DATA.sources.map(function (s) { return s.value; }));
-    el('legend').innerHTML = DATA.sources.map(function (s, i) {
-      return '<div class="leg" data-i="' + i + '">' +
-        '<span class="leg-sw" style="background:' + s.color + '"></span>' +
-        '<span class="leg-n">' + escapeHtml(s.name) + '</span>' +
-        '<span class="leg-p" style="color:' + s.color + '">' + pcts[i] + '%</span>' +
-        '<span class="leg-v">' + fmt(s.value) + ' kg</span>' +
-      '</div>';
-    }).join('');
-
-    function highlight(idx) {
-      Array.prototype.forEach.call(segs, function (c) {
-        var on = c.getAttribute('data-i') === String(idx);
-        c.style.opacity     = (idx === null || on) ? '1' : '.3';
-        c.style.strokeWidth = on ? (SW + 6) : SW;
-      });
-    }
-    Array.prototype.forEach.call(el('legend').querySelectorAll('.leg'), function (row) {
-      var idx = Number(row.getAttribute('data-i'));
-      row.addEventListener('mouseenter', function () { highlight(idx); });
-      row.addEventListener('mouseleave', function () { highlight(null); });
-    });
-  }
-
-  /* ── P1-2 누진제 ────────────────────────────── */
-  function renderTariff() {
-    var tf = DATA.tariff;
-    var t1 = tf.tiers[0], t2 = tf.tiers[1], kwh = tf.kwh;
-    var projKwh = (kwh / DATA.daysElapsed) * DATA.daysInMonth;
-
-    var spans = [t1, t2 - t1, t1];              // 3단계는 상한이 없어 1단계 폭으로 표시
-    var fills = [
-      Math.min(1, kwh / spans[0]),
-      Math.min(1, Math.max(0, kwh - t1) / spans[1]),
-      Math.min(1, Math.max(0, kwh - t2) / spans[2])
-    ];
-    var stage  = kwh <= t1 ? 1 : kwh <= t2 ? 2 : 3;
-    var nextAt = stage === 1 ? t1 : stage === 2 ? t2 : null;
-
-    el('tariff').innerHTML = '' +
-      '<div class="big-stat"><b>' + fmt(kwh, 0) + '</b><span>kWh · 당월 누적</span></div>' +
-      '<div class="stat-note">현재 <b>' + stage + '단계</b>' +
-        (nextAt ? ' · ' + (stage + 1) + '단계 진입까지 <b>' + fmt(nextAt - kwh, 0) + '</b> kWh' : ' · 최고 단계') +
-      '</div>' +
-
-      '<div class="tier-bar">' +
-        '<div class="tier-seg t1"><i style="width:' + (fills[0] * 100).toFixed(1) + '%"></i></div>' +
-        '<div class="tier-seg t2"><i style="width:' + (fills[1] * 100).toFixed(1) + '%"></i></div>' +
-        '<div class="tier-seg t3"><i style="width:' + (fills[2] * 100).toFixed(1) + '%"></i></div>' +
-      '</div>' +
-      '<div class="tier-labs">' +
-        '<span>1단계 ~' + t1 + '</span><span>2단계 ~' + t2 + '</span><span>3단계 ' + t2 + '~</span>' +
-      '</div>' +
-
-      '<div class="goal-rows">' +
-        '<div class="krow"><span>월말 예상 사용량</span><strong>' + fmt(projKwh, 0) + ' kWh</strong></div>' +
-        '<div class="krow"><span>월말 예상 단계</span><strong>' +
-          (projKwh <= t1 ? '1단계' : projKwh <= t2 ? '2단계' : '3단계') + '</strong></div>' +
-        '<div class="krow"><span>전기 배출 환산</span><strong>' + fmt(kwh * FACTOR.elec) + ' kg</strong></div>' +
-      '</div>';
-  }
-
   /* ── 계산기 + P1-5 계산 근거 ────────────────── */
   function initCalculator() {
     var toggle = el('syncToggle');
@@ -1301,9 +1053,6 @@
     renderHero();
     renderEmitChart();
     renderKpi();
-    renderGoal();
-    renderDonut();
-    renderTariff();
     initCalculator();
     renderLedger();
   }
