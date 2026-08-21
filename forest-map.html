@@ -102,14 +102,13 @@
     font-size:10.5px; color:var(--muted); margin-top:5px;
   }
 
-  .radius-row{
-    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
-    margin-top:16px; padding:13px 15px; border-radius:10px;
-    background:#f8fafc; border:1px solid var(--line);
+  .dev-range{
+    display:flex; align-items:center; gap:6px; margin-top:8px;
+    font-size:10.5px; color:var(--muted);
   }
-  .radius-row label{font-size:12px; color:var(--muted); font-weight:600}
-  .radius-row input[type=range]{flex:1; min-width:160px; accent-color:var(--green)}
-  .radius-v{font-size:14px; font-weight:700; font-variant-numeric:tabular-nums; min-width:78px; text-align:right}
+  .dev-range b{font-family:var(--mono, ui-monospace); font-weight:700; color:var(--navy-soft)}
+  .dev.on .dev-range{color:#9fc0d8}
+  .dev.on .dev-range b{color:#fff}
 
   /* ── 결과 ──────────────────────────────────── */
   .result{
@@ -252,13 +251,9 @@
     </div>
     <div class="card-body">
       <div class="dev-grid" id="devGrid"></div>
-      <div class="radius-row">
-        <label for="radius">탐색 반경</label>
-        <input type="range" id="radius" min="100" max="2000" step="100" value="500">
-        <span class="radius-v" id="radiusV">500 m</span>
-      </div>
-      <p class="note">반경은 위성 방식에서 <b>연결영역을 추적할 범위</b>입니다. 숲이 반경 밖으로 이어지면
-        면적이 잘리므로, 결과가 반경에 닿으면 경고가 표시됩니다.</p>
+      <p class="note">관측 반경은 <b>디바이스에 설정된 값</b>입니다 — 카메라·센서가 실제로 커버하는 범위이며
+        웹에서 바꾸지 않습니다. 숲이 이 범위를 넘어 이어지면 위성 방식에서 면적이 잘리므로
+        결과에 경고가 표시됩니다.</p>
     </div>
   </section>
 
@@ -279,7 +274,7 @@
     <div class="card-head">
       <div>
         <h2 class="card-title">지도</h2>
-        <p class="card-sub">인증키를 넣으면 디바이스 마커 · 탐색 반경 · 산림 폴리곤이 표시됩니다</p>
+        <p class="card-sub">인증키를 넣으면 디바이스 마커 · 관측 반경 · 산림 폴리곤이 표시됩니다</p>
       </div>
       <div class="pill warn"><span class="dot off"></span>인증키 <strong>미등록</strong></div>
     </div>
@@ -290,7 +285,7 @@
           <p>인증키가 등록되면 선택한 디바이스로 지도가 이동하고 아래 레이어가 올라갑니다.</p>
           <div class="layer-list">
             <div class="layer"><span class="dot off"></span>배경지도 · 항공영상 — 브이월드</div>
-            <div class="layer"><span class="dot off"></span>디바이스 마커 + 탐색 반경 원</div>
+            <div class="layer"><span class="dot off"></span>디바이스 마커 + 관측 반경 원</div>
             <div class="layer"><span class="dot off"></span><b>산림 폴리곤</b> — 임상도 교차 결과</div>
             <div class="layer"><span class="dot off"></span>위성 연결영역 — Sentinel-2 분류 마스크</div>
           </div>
@@ -378,22 +373,22 @@
 
   /* ═══════════════════════════════════════════════════════
      디바이스 — 실제 연동 시 이 배열만 계측 파이프라인 응답으로 교체.
+     rangeM       : 디바이스에 설정된 관측 반경. 기기 스펙에서 오는 값이며
+                    웹에서 조절하지 않는다.
      forestHaMap  : 임상도 폴리곤 조회 결과 (방식 A)
      forestHaSat  : 위성 연결영역 결과 (방식 B)
-     reachedEdge  : 연결영역이 탐색 반경 경계에 닿았는지
      ═══════════════════════════════════════════════════════ */
   var DEVICES = [
-    { id:'RPI-01', place:'정문 녹지',        lat:35.94831, lng:126.95752,
-      forestHaMap: 1.8,  forestHaSat: 1.5,  canopy:'침엽수림', mapYear:2021, reachedEdge:false },
-    { id:'RPI-02', place:'주차장 완충녹지',  lat:35.94907, lng:126.95884,
-      forestHaMap: 0.6,  forestHaSat: 0.4,  canopy:'활엽수림', mapYear:2021, reachedEdge:false },
-    { id:'RPI-03', place:'후문 사면',        lat:35.95024, lng:126.96013,
-      forestHaMap:27.4,  forestHaSat:31.2,  canopy:'혼효림',   mapYear:2021, reachedEdge:true  }
+    { id:'RPI-01', place:'정문 녹지',        lat:35.94831, lng:126.95752, rangeM:250,
+      forestHaMap: 1.8,  forestHaSat: 1.5,  canopy:'침엽수림', mapYear:2021 },
+    { id:'RPI-02', place:'주차장 완충녹지',  lat:35.94907, lng:126.95884, rangeM:250,
+      forestHaMap: 0.6,  forestHaSat: 0.4,  canopy:'활엽수림', mapYear:2021 },
+    { id:'RPI-03', place:'후문 사면',        lat:35.95024, lng:126.96013, rangeM:300,
+      forestHaMap:27.4,  forestHaSat:31.2,  canopy:'혼효림',   mapYear:2021 }
   ];
 
   var PIXEL_M2 = 100;          // Sentinel-2 10m × 10m
-  var current  = DEVICES[2];   // 기본: 사면 (숲이 이어지는 사례)
-  var radiusM  = 500;
+  var current  = DEVICES[2];   // 기본: 사면 (숲이 관측 반경을 넘는 사례)
 
   var APIS = [
     { name:'산림청 임상도 + 공간DB', role:'방식 A — 폴리곤 조회',
@@ -430,6 +425,7 @@
         '<div class="dev-id">' + esc(d.id) + '</div>' +
         '<div class="dev-loc">' + esc(d.place) + '</div>' +
         '<div class="dev-xy">' + d.lat.toFixed(5) + ', ' + d.lng.toFixed(5) + '</div>' +
+        '<div class="dev-range">관측 반경 <b>' + fmt(d.rangeM, 0) + ' m</b></div>' +
       '</button>';
     }).join('');
 
@@ -449,10 +445,12 @@
     var m2  = ha * 10000;
     var px  = Math.round(d.forestHaSat * 10000 / PIXEL_M2);
     var gap = d.forestHaMap > 0 ? (d.forestHaSat - d.forestHaMap) / d.forestHaMap * 100 : 0;
-    var edgeWarn = d.reachedEdge && (Math.sqrt(d.forestHaSat * 10000 / Math.PI) > radiusM * 0.85);
+    /* 위성 결과를 원으로 환산한 반지름이 관측 반경에 근접하면 면적이 잘렸다는 신호 */
+    var reachM   = Math.sqrt(d.forestHaSat * 10000 / Math.PI);
+    var edgeWarn = reachM > d.rangeM * 0.85;
 
     el('statePill').innerHTML = '<span class="dot off"></span>' + esc(d.id) +
-      ' · 반경 <strong>' + fmt(radiusM, 0) + ' m</strong>';
+      ' · 관측 반경 <strong>' + fmt(d.rangeM, 0) + ' m</strong>';
 
     el('resultCard').innerHTML =
       '<div class="result">' +
@@ -491,34 +489,25 @@
 
       (edgeWarn
         ? '<div class="diff" style="background:#fdf0ee; border-color:#f5d7d2; color:#8a2c20">' +
-            '<span>⚠</span><span><b>숲이 탐색 반경 밖으로 이어집니다.</b> 현재 반경 ' +
-            fmt(radiusM, 0) + ' m 로는 면적이 잘립니다 — 반경을 늘려 다시 산출해야 실제 면적이 나옵니다.' +
+            '<span>⚠</span><span><b>숲이 디바이스 관측 반경을 넘어 이어집니다.</b> ' +
+            esc(d.id) + ' 의 반경은 ' + fmt(d.rangeM, 0) + ' m 인데 숲은 최소 ' +
+            fmt(reachM, 0) + ' m 까지 뻗어 있어 위성 방식으로는 면적이 잘립니다 — ' +
+            '이 경우 <b>임상도 폴리곤 값을 써야</b> 실제 면적이 나옵니다.' +
           '</span></div>'
         : '') +
 
       '<div class="krows">' +
         '<div class="krow"><span>디바이스 좌표 (WGS84)</span><strong>' +
           d.lat.toFixed(5) + ', ' + d.lng.toFixed(5) + '</strong></div>' +
-        '<div class="krow"><span>탐색 반경</span><strong>' + fmt(radiusM, 0) + ' m · 최대 탐색 면적 ' +
-          fmt(Math.PI * radiusM * radiusM / 10000, 1) + ' ha</strong></div>' +
+        '<div class="krow"><span>관측 반경 <span class="tag measured">기기 설정값</span></span><strong>' +
+          fmt(d.rangeM, 0) + ' m · 관측 가능 면적 ' +
+          fmt(Math.PI * d.rangeM * d.rangeM / 10000, 1) + ' ha</strong></div>' +
         '<div class="krow"><span>위성 최소 단위</span><strong>' + PIXEL_M2 + ' m² (10 × 10 m)</strong></div>' +
         '<div class="krow"><span>면적 계산</span><strong>구면 면적 또는 EPSG:5179 투영</strong></div>' +
       '</div>' +
 
       '<p class="note">이 면적은 <b>디바이스가 놓인 숲 전체</b>이며, 우리가 관리하는 구역 면적과 다릅니다. ' +
         '숲이 사업장 경계를 넘어 이어지면 그 전체가 잡히므로, 관리 책임 범위와 혼동하면 안 됩니다.</p>';
-  }
-
-  /* ── 반경 슬라이더 ─────────────────────────── */
-  function initRadius() {
-    var r = el('radius');
-    function sync() {
-      radiusM = parseInt(r.value, 10);
-      el('radiusV').textContent = fmt(radiusM, 0) + ' m';
-      renderResult();
-    }
-    r.addEventListener('input', sync);
-    sync();
   }
 
   /* ── 필요한 API ────────────────────────────── */
@@ -547,7 +536,7 @@
 
   renderDevices();
   renderApis();
-  initRadius();
+  renderResult();
 })();
 </script>
 <script src="assets/sidebar.js" defer></script>
