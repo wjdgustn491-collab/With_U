@@ -5,7 +5,8 @@ module.exports=async function handler(req,res){
   const lat=Number(req.query?.lat),lon=Number(req.query?.lon);
   if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>85||Math.abs(lon)>180)
     return res.status(400).json({error:'유효한 위도·경도가 필요합니다.'});
-  const dLat=0.005,dLon=0.005/Math.cos(lat*Math.PI/180);
+  // Cover the 100 m estimate and the 30 m nearest-parcel allowance.
+  const dLat=0.002,dLon=0.002/Math.cos(lat*Math.PI/180);
   const bbox=[lon-dLon,lat-dLat,lon+dLon,lat+dLat].map(n=>n.toFixed(7)).join(',');
   try{
     const upstream=await fetch('https://api.openstreetmap.org/api/0.6/map?bbox='+bbox,{
