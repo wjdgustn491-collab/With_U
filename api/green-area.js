@@ -14,7 +14,7 @@ module.exports=async function handler(req,res){
     const xml=await upstream.text();
     if(xml.length>20000000||!xml.startsWith('<?xml'))throw Error('invalid response');
     const nodes=new Map();
-    for(const match of xml.matchAll(/<node\s+[^>]*id="(\d+)"[^>]*lat="([^"]+)"[^>]*lon="([^"]+)"[^>]*\/?>(?:<\/node>)?/g))
+    for(const match of xml.matchAll(/<node\s+id="(\d+)"[^>]*lat="([^"]+)"[^>]*lon="([^"]+)"[^>]*\/?>(?:<\/node>)?/g))
       nodes.set(match[1],{lat:Number(match[2]),lon:Number(match[3])});
     const elements=[];
     for(const match of xml.matchAll(/<way\s+[^>]*id="(\d+)"[^>]*>([\s\S]*?)<\/way>/g)){

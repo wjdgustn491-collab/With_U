@@ -40,7 +40,7 @@ const GreenArea = (() => {
   async function fetchEstimate(center) {
     if (!Array.isArray(center) || center.length !== 2 || !center.every(Number.isFinite)) throw Error('유효한 장치 좌표가 필요합니다.');
     const [lat,lon]=center;
-    const response=await fetch('/api/green-area?lat='+encodeURIComponent(lat)+'&lon='+encodeURIComponent(lon),
+    const response=await fetch('/api/green-area?v=2&lat='+encodeURIComponent(lat)+'&lon='+encodeURIComponent(lon),
       {cache:'no-store',signal:AbortSignal.timeout(30000)});
     if (!response.ok) throw Error('녹지 지도 자료 조회에 실패했습니다 ('+response.status+').');
     const data=await response.json();
