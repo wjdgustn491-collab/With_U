@@ -33,15 +33,17 @@ GitHub Pages로 게시하려면 저장소의 Pages 설정에서 해당 브랜치
 
 홈페이지 상단 `관리자 페이지`에서 `admin.html`로 이동합니다. `carbon-method.html`에는 공식·단위·출처·제약과 연결 조건이 있습니다.
 
-- 등록 장치 GPS 위치 입력 후 EOX Sentinel-2 cloudless 2016년 버전 위성영상에서 녹지 경계 수동 지정 및 근사 면적 계산
+- 등록 장치 위치 입력 후 Esri World Imagery 고배율 원본 타일에서 녹지 경계 수동 지정 및 근사 면적 계산. EOX Sentinel-2 2016 비교 영상도 선택 가능
+- 장치 중심 반경 500 m의 OpenStreetMap 등록 녹지 면적 추산. 위성영상 픽셀의 자동 녹지 분류는 아님
 - 토양 온도·수분·EC·pH: 서버의 장치 기록 조회 및 최근 6시간 구간별 확인. EC·pH는 아직 미수집
 - 여러 수종 그룹의 기준/현재 수량·DBH·수고와 공통/사용자 계수 입력
 - 수목 저장량 및 조사 기간 평균 변화량 산출
 - 수목 입력 예시 및 위치·경계·수목 입력의 명시적인 브라우저 로컬 저장. 관리자 토큰과 센서 기록은 저장하지 않음
 
-현재 장치 GPS 좌표와 서버 비밀 설정이 없어 위치·센서값은 연결 대기입니다. `api/admin-readings.js`는 서버 측 관리자 조회 API로, Vercel 환경 변수 `WITHU_ADMIN_TOKEN`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`가 모두 있어야 작동합니다. 허용 장치는 기본적으로 `pi5-monitor-01`이며 `WITHU_ALLOWED_DEVICE_IDS`로 변경할 수 있습니다. Supabase 서비스 키는 브라우저에 노출하지 않습니다. 기존 장치는 1분마다 측정하고 약 6시간마다 누적 기록을 업로드합니다. 현재 운영 저장값은 토양 온도·수분뿐입니다. 위성영상은 2016년 버전 모자이크이므로 최신 녹지 판정이나 자동 분류가 아닙니다.
+현재 장치 GPS 수신기와 서버 비밀 설정이 없어 실제 위치·센서값은 연결 대기입니다. `api/admin-readings.js`와 `api/admin-location.js`는 서버 측 관리자 API로, Vercel 환경 변수 `WITHU_ADMIN_TOKEN`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`가 모두 있어야 작동합니다. 허용 장치는 기본적으로 `pi5-monitor-01`이며 `WITHU_ALLOWED_DEVICE_IDS`로 변경할 수 있습니다. Supabase 서비스 키는 브라우저에 노출하지 않습니다. 기존 장치는 1분마다 측정하고 약 6시간마다 누적 기록을 업로드합니다. 현재 운영 저장값은 토양 온도·수분뿐입니다. Esri 영상의 촬영일·해상도는 위치에 따라 다르며, EOX 비교 영상은 2016년 버전입니다. 지도에서 수동 지정한 경계와 OpenStreetMap 추정 면적은 현장 조사로 확인해야 합니다.
 
 계산 엔진: carbon-engine.js. 기존 scratch/biomass_estimator.py의 수목 식과 가정을 이식하되 저장량과 흡수량을 구분했습니다. 수종별 검증 계수 DB는 없으며 기존 공통 계수를 표시합니다. 온습도·EC·pH에 임의 탄소 보정식을 적용하지 않습니다.
 
 검증: `node carbon-engine.test.cjs` (수목 단위, 결측값, 0, 날짜, 경계 교차, 센서 검증).
+
 
