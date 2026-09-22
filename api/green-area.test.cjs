@@ -4,9 +4,9 @@ function response(){return {code:0,body:null,setHeader(){},status(code){this.cod
 (async()=>{
   assert.equal((await handler({method:'POST',query:{}},response())).code,405);
   assert.equal((await handler({method:'GET',query:{lat:'91',lon:'127'}},response())).code,400);
-  const prior=global.fetch;global.fetch=async(url,options)=>{assert.equal(String(url),'https://overpass-api.de/api/interpreter');assert.match(String(options.body),/around%3A500%2C37\.0000000%2C127\.0000000/);return {ok:true,json:async()=>({elements:[]})};};
-  try{const result=await handler({method:'GET',query:{lat:'37',lon:'127'}},response());assert.equal(result.code,200);assert.deepEqual(result.body,{elements:[]});}
+  const prior=global.fetch;global.fetch=async(url)=>{assert.match(String(url),/^https:\/\/api\.openstreetmap\.org\/api\/0\.6\/map\?bbox=/);return {ok:true,text:async()=>`<?xml version="1.0"?><osm><node id="1" lat="37" lon="127"/><node id="2" lat="37" lon="127.001"/><node id="3" lat="37.001" lon="127.001"/><node id="4" lat="37.001" lon="127"/><way id="8"><nd ref="1"/><nd ref="2"/><nd ref="3"/><nd ref="4"/><nd ref="1"/><tag k="leisure" v="park"/></way></osm>`};};
+  try{const result=await handler({method:'GET',query:{lat:'37',lon:'127'}},response());assert.equal(result.code,200);assert.equal(result.body.elements[0].tags.leisure,'park');assert.equal(result.body.elements[0].geometry.length,5);}
   finally{global.fetch=prior;}
-  console.log('PASS: green-area API method, coordinates and Overpass proxy');
+  console.log('PASS: green-area API method, coordinates and OSM map filtering');
 })().catch(error=>{console.error(error);process.exitCode=1;});
 
