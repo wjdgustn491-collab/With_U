@@ -7,10 +7,6 @@ assert.throws(()=>E.tree({...g,n0:1.5},0));
 assert.throws(()=>E.tree({...g,d0:''},0));
 assert.throws(()=>E.tree({...g,density:Infinity},0));
 assert.ok(E.tree({...g,d0:19},0)<E.tree(g,0));
-assert.ok(Math.abs(E.soil({soc0:20,bd0:1.3,depth:30,gravel0:0},0,10000)-286)<1e-10);
-assert.ok(Math.abs(E.soil({soc0:20,bd0:1.3,depth:30,gravel0:10},0,3500)-90.09)<1e-10);
-assert.throws(()=>E.soil({soc0:'',bd0:1.3,depth:30,gravel0:0},0,3500));
-assert.equal(E.soil({soc0:0,bd0:1.3,depth:30,gravel0:0},0,3500),0);
 assert.throws(()=>E.years('2026-09-22','2026-09-22'));
 assert.throws(()=>E.years('2026-02-30','2027-01-01'));
 assert.ok(Math.abs(E.years('2025-09-22','2026-09-22')-365/365.2425)<1e-12);
@@ -25,4 +21,4 @@ const s=E.sensor({device_id:'RPI-01',timestamp:'2026-09-21T03:00:00Z',source:'ha
 assert.equal(s.soil_temperature,0);assert.equal(s.soil_ec,null);assert.equal(s.soil_ph,null);
 assert.throws(()=>E.sensor({...s,soil_ph:15}));
 assert.throws(()=>E.sensor({...s,source:'live'}));
-console.log('PASS: tree/soil units, zero/missing values, dates, polygons and sensor validation');
+console.log('PASS: tree units, zero/missing values, dates, polygons and sensor validation');

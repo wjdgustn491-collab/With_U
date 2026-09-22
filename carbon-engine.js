@@ -13,10 +13,6 @@
     const density=number(g.density,1,2000,'목재 기본밀도'),f=number(g.f,0.01,1,'형수'),bef=number(g.bef,1,5,'BEF'),r=number(g.r,0,3,'뿌리 비율'),cf=number(g.cf,0.01,1,'탄소분율');
     return Math.PI*(d/200)**2*h*f*density*bef*(1+r)*cf*ratio*n/1000;
   }
-  function soil(s,t,area){
-    const soc=number(s['soc'+t],0,1000,'SOC'),bd=number(s['bd'+t],0.01,3,'용적밀도'),depth=number(s.depth,0.1,200,'토층 두께'),gravel=number(s['gravel'+t],0,100,'조립질 질량비');
-    return soc*bd*depth*(1-gravel/100)*0.1*(number(area,0,1e8,'녹지 면적')/10000)*ratio;
-  }
   function years(a,b){
     const parse=x=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(x))throw Error('조사 날짜를 입력하세요.');const d=new Date(x+'T00:00:00Z');if(!Number.isFinite(+d)||d.toISOString().slice(0,10)!==x)throw Error('올바른 날짜를 입력하세요.');return +d;};
     const days=(parse(b)-parse(a))/86400000;if(days<=0)throw Error('현재 조사일은 기준 조사일보다 늦어야 합니다.');return days/365.2425;
@@ -46,5 +42,5 @@
     for(const [k,min,max] of [['soil_temperature',-40,80],['soil_moisture',0,100],['soil_ec',0,200000],['soil_ph',0,14]])out[k]=record[k]==null?null:number(record[k],min,max,k);
     return out;
   }
-  const api={number,tree,soil,years,polygon,sensor};if(typeof module!=='undefined')module.exports=api;else root.CarbonEngine=api;
+  const api={number,tree,years,polygon,sensor};if(typeof module!=='undefined')module.exports=api;else root.CarbonEngine=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
