@@ -10,13 +10,19 @@ module.exports=async function handler(req,res){
  try{
   const endpoint=new URL('/rest/v1/environment_readings',url);
   endpoint.searchParams.set('device_id','eq.'+device);
-  endpoint.searchParams.set('select','device_id,timestamp,source,soil_temperature,soil_moisture');
+  // Query also works before the additive migration, when EC/pH are absent.
+  endpoint.searchParams.set('select','*');
   endpoint.searchParams.set('order','timestamp.desc');
   endpoint.searchParams.set('limit','1000');
   const upstream=await fetch(endpoint,{headers:{apikey:serviceKey,Authorization:'Bearer '+serviceKey},signal:AbortSignal.timeout(10000),redirect:'error'});
   if(!upstream.ok)throw Error('upstream status '+upstream.status);
   const rows=await upstream.json();
   if(!Array.isArray(rows))throw Error('invalid upstream data');
-  return res.status(200).json({device,records:rows.filter(row=>row.device_id===device).map(row=>({...row,soil_ec:null,soil_ph:null}))});
+  const numeric=value=>typeof value==='number'&&Number.isFinite(value)?value:null;
+  return res.status(200).json({device,records:rows.filter(row=>row.device_id===device).map(row=>({
+   device_id:row.device_id,timestamp:row.timestamp,source:row.source,
+   soil_temperature:numeric(row.soil_temperature),soil_moisture:numeric(row.soil_moisture),
+   soil_ec:numeric(row.soil_ec),soil_ph:numeric(row.soil_ph),
+  }))});
  }catch(error){console.error('Admin readings query failed:',error.message);return res.status(502).json({error:'장치 기록 조회에 실패했습니다. 서버 설정과 데이터베이스 상태를 확인하세요.'});}
 };
