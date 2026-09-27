@@ -13,23 +13,32 @@ module.exports=async function handler(req,res){
   const token=/^Bearer\s+(.+)$/i.exec(req.headers.authorization||'')?.[1]||'';
   if(!sameToken(token,adminToken))return res.status(401).json({error:'관리자 조회 토큰이 올바르지 않습니다.'});
   const device=req.query?.device;
-  if(typeof device!=='string'||!allowed.has(device)||!/^[A-Za-z0-9_-]{1,64}$/.test(device))return res.status(400).json({error:'등록되지 않은 장치입니다.'});
+  const listing=req.method==='GET'&&req.query?.list==='1';
+  if(!listing&&(typeof device!=='string'||!allowed.has(device)||!/^[A-Za-z0-9_-]{1,64}$/.test(device)))return res.status(400).json({error:'등록되지 않은 장치입니다.'});
   if(req.method==='PUT'&&!validPosition(req.body))return res.status(400).json({error:'위도·경도를 숫자로 입력하세요.'});
   try{
     const endpoint=new URL('/rest/v1/device_locations',url);
-    endpoint.searchParams.set('device_id','eq.'+device);
+    const registered=[...allowed].filter(id=>/^[A-Za-z0-9_-]{1,64}$/.test(id));
+    endpoint.searchParams.set('device_id',listing?'in.('+registered.join(',')+')':'eq.'+device);
     if(req.method==='GET'){
       endpoint.searchParams.set('select','device_id,latitude,longitude,source,accuracy_m,updated_at');
-      endpoint.searchParams.set('limit','1');
+      endpoint.searchParams.set('limit',listing?String(registered.length):'1');
     }else endpoint.searchParams.set('on_conflict','device_id');
     const upstream=await fetch(endpoint,{method:req.method==='GET'?'GET':'POST',
       headers:{apikey:serviceKey,Authorization:'Bearer '+serviceKey,...(req.method==='PUT'?{'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=representation'}:{})},
       body:req.method==='PUT'?JSON.stringify({device_id:device,latitude:req.body.latitude,longitude:req.body.longitude,source:'admin',accuracy_m:null,updated_at:new Date().toISOString()}):undefined,
       signal:AbortSignal.timeout(10000),redirect:'error'});
-    if(!upstream.ok)throw Error('upstream status '+upstream.status);
+    if(!upstream.ok){
+      const failure=await upstream.json().catch(()=>({}));
+      if(['PGRST205','42P01'].includes(failure.code))return res.status(503).json({error:'장치 위치 테이블이 준비되지 않았습니다. device_locations 데이터베이스 설정을 적용해야 합니다.'});
+      throw Error('upstream status '+upstream.status+' code '+(failure.code||'unknown'));
+    }
     const rows=await upstream.json();
     if(!Array.isArray(rows))throw Error('invalid upstream data');
-    return res.status(200).json({device,location:rows.find(row=>row.device_id===device)||null});
+    if(listing)return res.status(200).json({devices:registered.map(id=>({id,location:rows.find(row=>row.device_id===id)||null}))});
+    const location=rows.find(row=>row.device_id===device)||null;
+    if(req.method==='PUT'&&!location)throw Error('Saved location missing from response');
+    return res.status(200).json({device,location});
   }catch(error){console.error('Admin location request failed:',error.message);return res.status(502).json({error:'장치 위치 처리에 실패했습니다. 서버 설정과 데이터베이스 상태를 확인하세요.'});}
 };
 

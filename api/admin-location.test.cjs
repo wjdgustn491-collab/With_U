@@ -13,6 +13,14 @@ async function run(){
     global.fetch=async(url,options)=>{assert.match(String(url),/device_locations/);assert.equal(options.method,'POST');assert.equal(JSON.parse(options.body).source,'admin');return {ok:true,json:async()=>[{device_id:'pi5-monitor-01',latitude:37,longitude:127,source:'admin'}]};};
     try{const result=await handler({method:'PUT',query:{device:'pi5-monitor-01'},headers:{authorization:'Bearer test-admin'},body:{latitude:37,longitude:127}},response());assert.equal(result.code,200);assert.equal(result.body.location.latitude,37);}
     finally{global.fetch=prior;}
+    global.fetch=async(url,options)=>{assert.equal(options.method,'GET');assert.equal(new URL(url).searchParams.get('device_id'),'in.(pi5-monitor-01)');return {ok:true,json:async()=>[{device_id:'pi5-monitor-01',latitude:37,longitude:127,source:'admin'}]};};
+    try{
+      const result=await handler({method:'GET',query:{list:'1'},headers:{authorization:'Bearer test-admin'}},response());
+      assert.equal(result.code,200);assert.deepEqual(result.body.devices.map(d=>d.id),['pi5-monitor-01']);assert.equal(result.body.devices[0].location.longitude,127);
+    }finally{global.fetch=prior;}
+    global.fetch=async()=>({ok:false,status:404,json:async()=>({code:'PGRST205'})});
+    try{const result=await handler({method:'GET',query:{device:'pi5-monitor-01'},headers:{authorization:'Bearer test-admin'}},response());assert.equal(result.code,503);assert.match(result.body.error,/device_locations/);}
+    finally{global.fetch=prior;}
   }finally{process.env=old;}
   console.log('PASS: location API setup, auth, coordinate validation and server upsert');
 }
