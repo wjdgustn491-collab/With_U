@@ -23,14 +23,16 @@ function fillSelectors(){
   $('soil-device').replaceChildren(option('','선택 안 함 · 예시 환경'),...store.devices.map(d=>option(d.id,d.id)));$('soil-device').value=store.selectedDevice;
 }
 function profile(){$('account-info').textContent=company()?company().name+' · '+company().boundary:'';}
-function navigate(page){
-  document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id===page));
+function navigate(page,{scroll=true}={}){
+  const isCompany=WithUAuth.user?.role==='company';
+  page=isCompany?(['dashboard','credits','reports','data'].includes(page)?page:'dashboard'):'home';
+  document.querySelectorAll('.page').forEach(el=>{el.hidden=el.id!==page;el.classList.toggle('active',el.id===page);});
   document.querySelectorAll('[data-page]').forEach(el=>el.classList.toggle('active',el.dataset.page===page));
-  $('site-header').classList.remove('menu-open');document.querySelector('.menu-toggle').setAttribute('aria-expanded','false');$('workspace-message').textContent='';$('workspace-message').classList.remove('error');$('toast').classList.remove('show');$(page).scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+  $('site-header').classList.remove('menu-open');document.querySelector('.menu-toggle').setAttribute('aria-expanded','false');$('workspace-message').textContent='';$('workspace-message').classList.remove('error');$('toast').classList.remove('show');if(scroll)$(page).scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
   if(page==='reports')renderReport();
 }
 function toggleMenu(){const open=$('site-header').classList.toggle('menu-open');document.querySelector('.menu-toggle').setAttribute('aria-expanded',String(open));}
-function openReportExport(){navigate('reports');$('report-period').focus();}
+function openReportExport(){if(WithUAuth.user?.role!=='company'){WithUAuth.open();return;}navigate('reports');$('report-period').focus();}
 function emptySummary(){return {emission:null,scopes:{1:null,2:null,3:null},count:0,rows:[],holding:null,retired:null,transferred:null,tree:null};}
 function summary(){
   B.date(store.start);B.date(store.end);if(store.start>store.end)throw Error('보고 시작일은 종료일보다 늦을 수 없습니다.');
@@ -65,7 +67,6 @@ function renderSensors(){
 function render(){
   fillSelectors();$('period-start').value=store.start;$('period-end').value=store.end;
   const valid=actual();$('data-mode').classList.toggle('actual',valid);
-  document.querySelector('.activity-intro').hidden=valid;
   $('data-mode').textContent=valid?`실제 데이터 · ${store.selectedDevice} · 미입력 자료는 예시로 대체하지 않습니다.`:'예시 데이터 · 측정 장치 미선택. 등록한 기업 자료는 저장되며, 장치 선택 시 실제 자료가 표시됩니다.';
   let s=emptySummary();try{s=summary();}catch(e){$('workspace-message').textContent=e.message;$('workspace-message').classList.add('error');}
   for(const el of document.querySelectorAll('[data-value]'))el.textContent=format(el.dataset.value==='annual'?s.tree?.annual:s[el.dataset.value]);
@@ -160,20 +161,26 @@ $('backup-company').onclick=handle(()=>{if(storageBlocked){downloadBlob(sessionS
 $('restore-company').onchange=handle(async event=>{try{const file=event.target.files[0];if(!file)return;if(file.size>2000000)throw Error('2 MB 이내의 기업 자료 파일을 선택하세요.');const w=B.workspace(JSON.parse(await file.text()));if(w.id!==WithUAuth.user?.company_id||w.name!==company()?.name||w.boundary!==company()?.boundary||JSON.stringify(w.surveys)!==JSON.stringify(company()?.surveys))throw Error('이 기업의 자료와 관리자가 등록한 현장 조사를 유지해야 합니다.');if(storageBlocked){if(!window.confirm('원본 브라우저 저장 자료를 백업한 뒤 가져온 기업 파일로 복구하시겠습니까?'))return;storageBlocked=false;storedRaw=sessionStorage.getItem(STORE);}if(store.companies.some(c=>c.id===w.id)&&!window.confirm('같은 기업의 브라우저 자료를 가져온 파일로 바꾸시겠습니까?'))return;commit(w,{selectedDevice:''});viewedReport=null;reading=null;profile();resetEmission();resetCredit();render();for(const id of ['emission-form','credit-form'])$(id).querySelector('button[type="submit"]').disabled=false;message('기업 자료 파일을 복원했습니다.');}finally{event.target.value='';}});
 let authEpoch=0,activeAccount=null;
 function emptyStore(){return {version:1,companies:[],selectedCompany:'',selectedDevice:'',devices:[],start:now.slice(0,4)+'-01-01',end:now,revisions:{}};}
+function accountView(user){
+ const isCompany=user?.role==='company';$('company-content').hidden=!isCompany;document.querySelector('.workspace-bar').hidden=!isCompany;$('auth-required').hidden=isCompany;
+ $('workspace-nav').hidden=!isCompany;$('report-export').hidden=!isCompany;document.querySelector('.menu-toggle').hidden=!isCompany;$('account-login').hidden=!!user;$('account-logout').hidden=!isCompany;
+ document.querySelector('.account-footer').hidden=!user;$('session-label').textContent=user?user.username+' · '+(isCompany?'기업 계정':'관리자'):'';
+}
 async function initializeAccount(){
- const epoch=++authEpoch,oldAccount=activeAccount;reading=null;sensorEpoch++;viewedReport=null;store=emptyStore();storedRaw=null;storageBlocked=false;$('company-content').hidden=true;profile();render();
+ const epoch=++authEpoch,oldAccount=activeAccount,previousPage=document.querySelector('.page.active')?.id||'home';reading=null;sensorEpoch++;viewedReport=null;store=emptyStore();storedRaw=null;storageBlocked=false;accountView(WithUAuth.user);navigate(previousPage,{scroll:false});$('company-content').hidden=true;profile();render();
  try{const result=await WithUAuth.check();if(epoch!==authEpoch)return;const user=result.user;
   if(oldAccount&&oldAccount!==user?.id)sessionStorage.removeItem('withu-company-'+oldAccount);
   activeAccount=user?.id||null;STORE='withu-company-'+(activeAccount||'guest');storedRaw=sessionStorage.getItem(STORE);
-  const isCompany=user?.role==='company';$('company-content').hidden=!isCompany;document.querySelector('.workspace-bar').hidden=!isCompany;$('auth-required').hidden=isCompany;$('account-login').hidden=!!user;$('account-logout').hidden=!user;$('session-label').textContent=user?user.username+' · '+(isCompany?'기업 계정':'관리자'):'예시 화면';$('admin-login').textContent=user?.role==='admin'?'관리자 화면':'관리자 로그인';
+  const isCompany=user?.role==='company';accountView(user);if(user?.role==='admin'){location.href='admin.html';return;}
+  navigate(previousPage==='home'?location.hash.slice(1):previousPage,{scroll:false});
   if(!isCompany){profile();render();return;}
   const [workspace,links]=await Promise.all([api('/api/company-workspace'),api('/api/company-devices')]);if(epoch!==authEpoch||WithUAuth.user?.id!==user.id)return;
   const w=B.workspace(workspace.document);store={...emptyStore(),companies:[w],selectedCompany:w.id,devices:links.devices.map(d=>({id:B.device(d.id)})),selectedDevice:links.devices[0]?.id||'',revisions:{[w.id]:workspace.revision}};
   if(storedRaw){try{const draft=JSON.parse(storedRaw);if(draft.companies?.length===1&&draft.companies[0].id===w.id){const dw=B.workspace(draft.companies[0]);if(dw.name===w.name&&dw.boundary===w.boundary&&JSON.stringify(dw.surveys)===JSON.stringify(w.surveys)){store.companies=[dw];store.revisions=draft.revisions||store.revisions;if(store.devices.some(d=>d.id===draft.selectedDevice)||draft.selectedDevice==='')store.selectedDevice=draft.selectedDevice;B.date(draft.start);B.date(draft.end);if(draft.start<=draft.end){store.start=draft.start;store.end=draft.end;}}}}catch{message('이전 임시 자료를 불러올 수 없습니다. 서버 자료를 사용합니다.',true);}}
   write(store);$('device-connection').textContent=store.devices.length?`${store.devices.length}개 연결 장치`:'관리자 장치 연결 대기';$('storage-status').textContent='기업 서버 자료 연결 완료 · 수정 후 서버 저장하세요.';profile();resetEmission();resetCredit();render();if(actual())await refreshSensor();
- }catch(e){if(epoch!==authEpoch)return;message(e.message,true);render();}
+ }catch(e){if(epoch!==authEpoch)return;accountView(WithUAuth.user);navigate(document.querySelector('.page.active')?.id,{scroll:false});message(e.message,true);render();}
 }
-$('account-login').onclick=()=>WithUAuth.open();$('admin-login').onclick=()=>{if(WithUAuth.user?.role==='admin')location.href='admin.html';else WithUAuth.open(true);};$('account-logout').onclick=handle(()=>WithUAuth.logout());
+$('account-login').onclick=()=>WithUAuth.open();$('account-logout').onclick=handle(()=>WithUAuth.logout());
 window.addEventListener('withu-auth',initializeAccount);
-profile();resetEmission();resetCredit();render();initializeAccount();if(['data','reports','credits'].includes(location.hash.slice(1)))navigate(location.hash.slice(1));if(location.hash==='#admin-login')WithUAuth.open(true);
+profile();resetEmission();resetCredit();render();initializeAccount();if(location.hash==='#admin-login')WithUAuth.open(true);
 setInterval(()=>{if(actual())handle(refreshSensor)();},21600000);

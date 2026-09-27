@@ -33,27 +33,44 @@
 <style>.top-nav .admin-nav{font-size:14px;font-weight:700;padding:12px 8px;white-space:nowrap;color:#176b70}.top-nav .admin-nav:hover{text-decoration:underline}@media(max-width:820px){.top-nav .admin-nav{min-height:48px;padding:15px 3px}}</style></head>
 <body>
   <header class="site-header" id="site-header">
-    <button class="brand" type="button" onclick="navigate('dashboard')" aria-label="WITH_U 대시보드">
+    <button class="brand" type="button" onclick="navigate('home')" aria-label="WITH_U 홈">
       <span class="brand-mark">W</span><span><strong>WITH_U</strong><small>CARBON WORKSPACE</small></span>
     </button>
-    <nav class="top-nav" aria-label="주요 메뉴">
+    <nav class="top-nav" id="workspace-nav" aria-label="주요 메뉴" hidden>
       <button type="button" data-page="dashboard" class="active" onclick="navigate('dashboard')">대시보드</button>
-      <button type="button" data-page="credits" onclick="navigate('credits')">탄소배출권</button>
+      <button type="button" data-page="credits" onclick="navigate('credits')">탄소 배출권</button>
       <button type="button" data-page="reports" onclick="navigate('reports')">지속가능경영 리포트</button>
     <button type="button" data-page="data" onclick="navigate('data')">기업 데이터 입력</button>
-    <button type="button" id="account-login">기업 로그인 / 회원가입</button><button type="button" id="account-logout" hidden>로그아웃</button></nav>
-    <button class="header-cta" type="button" onclick="openReportExport()">리포트 내보내기 ↗</button>
-    <button class="menu-toggle" type="button" aria-label="메뉴 열기" aria-expanded="false" onclick="toggleMenu()">☰</button>
+    <button type="button" id="account-logout" hidden>로그아웃</button></nav>
+    <button class="header-cta login-cta" type="button" id="account-login">로그인</button>
+    <button class="header-cta" type="button" id="report-export" onclick="openReportExport()" hidden>리포트 내보내기 ↗</button>
+    <button class="menu-toggle" type="button" aria-label="메뉴 열기" aria-expanded="false" onclick="toggleMenu()" hidden>☰</button>
   </header>
 
   <main>
 
     <p id="workspace-message" class="workspace-notice" role="status" aria-live="polite"></p>
-    <section class="page active" id="dashboard" aria-labelledby="dashboard-title">
-      <section class="activity-intro" aria-labelledby="activity-title">
-        <h2 id="activity-title">공장 안 녹지를 데이터로, 기업의 환경 성과를 증빙으로.</h2>
-        <p>WITH_U는 공장 안 녹지의 탄소흡수량을 산정하고, 기업의 배출·흡수 데이터를 꾸준히 관리하는 서비스를 만들어갑니다. 흩어진 환경 데이터를 모아 기업이 ESG 보고와 성과 증빙에 활용할 수 있도록 돕습니다.</p>
+    <section class="page active" id="home" aria-labelledby="home-title">
+      <section class="activity-intro landing-hero">
+        <span class="eyebrow">WITH_U · CARBON WORKSPACE</span>
+        <h1 id="home-title">공장 안 녹지를 데이터로,<br>기업의 환경 성과를 증빙으로.</h1>
+        <p>WITH_U는 기업의 배출 자료와 사업장 녹지의 수목 조사, 현장 센서 정보를 한곳에서 관리하는 플랫폼입니다. 흩어진 환경 기록을 연결해 지속가능경영 보고에 필요한 자료를 차근차근 쌓아갑니다.</p>
+        <button class="landing-start" type="button" onclick="WithUAuth.open()">우리 기업의 탄소 관리 시작하기 →</button>
       </section>
+      <section class="landing-overview" aria-labelledby="platform-title">
+        <div class="section-head"><div><span class="eyebrow">OUR PLATFORM</span><h2 id="platform-title">환경 데이터를 모으고, 성과를 기록하는 공간</h2><p>배출 기록부터 현장 정보와 보고서까지, 기업의 탄소 관리 흐름을 함께합니다.</p></div></div>
+        <div class="landing-features">
+          <article><span class="landing-number">01</span><h3>기업 탄소 데이터 관리</h3><p>직접 산정한 배출량 또는 활동량과 배출계수를 등록하고, 보고 기간별 배출 현황과 근거자료를 관리합니다.</p><span class="landing-detail">배출 기록 · 기간별 대시보드</span></article>
+          <article><span class="landing-number">02</span><h3>사업장 환경과 녹지 기록</h3><p>기업에 연결된 장치의 센서 정보를 확인하고, 관리자가 등록한 현장 수목 조사로 연평균 탄소 저장량 변화를 살펴봅니다.</p><span class="landing-detail">현장 센서 · 수목 조사 자료</span></article>
+          <article><span class="landing-number">03</span><h3>크레딧과 리포트 관리</h3><p>탄소배출권의 입고·소각·이전 기록을 구분해 관리하고, 기업 자료를 지속가능경영 리포트로 정리해 내보냅니다.</p><span class="landing-detail">크레딧 기록 · DOC · CSV · PDF</span></article>
+        </div>
+      </section>
+      <section class="landing-workflow" aria-labelledby="workflow-title">
+        <span class="eyebrow">GET STARTED</span><h2 id="workflow-title">우리 기업의 기록부터 시작하세요.</h2>
+        <ol><li><strong>기업 계정 만들기</strong><p>기업명과 사업장·보고 경계를 등록합니다.</p></li><li><strong>자료 입력하고 관리하기</strong><p>배출·크레딧 자료를 입력하고 연결된 현장 정보를 확인합니다.</p></li><li><strong>리포트로 정리하기</strong><p>보고 기간을 선택해 자료를 정리하고 보고서를 저장·내보냅니다.</p></li></ol>
+      </section>
+    </section>
+    <section class="page" id="dashboard" aria-labelledby="dashboard-title" hidden>
       <div class="intro">
         <div><span class="eyebrow">BUSINESS OVERVIEW</span><h1 id="dashboard-title">기업 지속가능경영 현황</h1><p>배출 기록, 보유 크레딧, 보고서에 필요한 핵심 수치만 한곳에서 확인합니다.</p></div>
         <span class="asof" id="dashboard-status"></span>
@@ -71,7 +88,7 @@
       </div>
     </section>
 
-    <section class="page" id="credits" aria-labelledby="credits-title">
+    <section class="page" id="credits" aria-labelledby="credits-title" hidden>
       <article class="credit-overview"><span class="eyebrow">CARBON CREDIT BALANCE</span><h1 id="credits-title">보유 크레딧,<br>명확하게 관리합니다.</h1><p>크레딧 수량은 실제 배출량과 상계하지 않고, 상태별로 분리해 지속가능경영 리포트에 바로 활용할 수 있습니다.</p><div class="credit-major"><b data-value="holding">—</b><span>tCO₂e</span><small>현재 보유</small></div></article>
       <div class="status-grid" aria-label="탄소배출권 상태">
         <article class="status-card available"><span class="status-label">보유</span><strong><span data-value="holding">—</span> <small>tCO₂e</small></strong><p>활용 전 잔여 크레딧</p></article>
@@ -93,7 +110,7 @@
       </section>
     </section>
 
-    <section class="page" id="reports" aria-labelledby="reports-title">
+    <section class="page" id="reports" aria-labelledby="reports-title" hidden>
       <div class="intro"><div><span class="eyebrow">EXPORT READY</span><h1 id="reports-title">지속가능경영 리포트</h1><p>분기 또는 연간 기준의 요약 문안을 내려받아 보고서에 바로 넣을 수 있습니다.</p></div><span class="asof">DOC · CSV · PDF 지원</span></div>
       <div class="report-shell">
         <aside class="report-settings"><h2>리포트 설정</h2><p>보고 기간을 고르면 화면과 다운로드 내용이 함께 바뀝니다.</p><label for="report-period">보고 기간</label><select id="report-period"><option value="custom">현재 선택 기간</option><option value="q1">시작 연도 1분기</option><option value="q2">시작 연도 2분기</option><option value="q3">시작 연도 3분기</option><option value="q4">시작 연도 4분기</option><option value="annual">시작 연도 연간</option></select><div class="download-actions"><button type="button" id="save-report" class="download-primary">보고서 저장</button><button class="download-primary" type="button" onclick="downloadReport('doc')">DOC 다운로드</button><button class="download-secondary" type="button" onclick="downloadReport('csv')">CSV 다운로드</button><button class="download-secondary" type="button" onclick="printReport()">PDF로 저장 / 인쇄</button></div><p class="report-side-note">선택한 데이터 모드와 입력 근거가 보고서에 함께 표시됩니다. 저장한 보고서는 생성 당시의 자료를 보관합니다.</p></aside>
@@ -101,7 +118,7 @@
       </div>
       <section class="business-panel" id="report-history"><h2>저장한 보고서</h2><button type="button" class="row-action" id="live-report">현재 자료로 보기</button><div id="report-list" class="report-list"></div></section>
     </section>
-    <section class="page" id="data" aria-labelledby="data-title">
+    <section class="page" id="data" aria-labelledby="data-title" hidden>
     <section class="workspace-bar" aria-label="기업과 데이터 선택">
       <label>기업<select id="company-select" disabled><option value="">로그인한 기업</option></select></label>
       <label>측정 장치<select id="workspace-device"><option value="">선택 안 함 · 예시 데이터</option></select></label>
@@ -130,7 +147,7 @@
       <section class="business-panel"><h2>자료 백업</h2><p>현재 기업의 입력 기록과 저장한 보고서를 JSON 파일로 보관·복원합니다. 회원 비밀번호는 저장 파일에 포함되지 않습니다.</p><div class="workspace-actions"><button type="button" id="backup-company">기업 자료 내려받기</button><label class="row-action">기업 자료 파일 가져오기<input id="restore-company" type="file" accept="application/json,.json"></label></div></section>
     </div></section>
   </main>
-<footer class="account-footer"><span id="session-label">예시 화면</span><button type="button" id="admin-login">관리자 로그인</button></footer>
+<footer class="account-footer" hidden><span id="session-label"></span></footer>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 </body>
