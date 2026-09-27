@@ -1,6 +1,7 @@
 'use strict';
 const B=BusinessEngine,E=CarbonEngine,$=id=>document.getElementById(id);
 let STORE='withu-company-guest';
+let activeCompanyName='';
 const format=v=>v==null?'미입력':Number(v).toLocaleString('ko-KR',{maximumFractionDigits:3});
 const actionNames={purchase:'입고',retire:'소각',transfer:'이전'};
 const uuid=()=>crypto.randomUUID();
@@ -22,7 +23,11 @@ function fillSelectors(){
   $('workspace-device').replaceChildren(option('','선택 안 함 · 예시 데이터'),...store.devices.map(d=>option(d.id,d.id)));$('workspace-device').value=store.selectedDevice;
   $('soil-device').replaceChildren(option('','선택 안 함 · 예시 환경'),...store.devices.map(d=>option(d.id,d.id)));$('soil-device').value=store.selectedDevice;
 }
-function profile(){$('account-info').textContent=company()?company().name+' · '+company().boundary:'';}
+function headerAccount(){
+ const user=WithUAuth.user,label=user?.role==='admin'?'관리자':user?.role==='company'?activeCompanyName:'';
+ $('header-account').textContent=label;$('header-account').title=label;$('header-account').hidden=!label;document.querySelector('.site-header').classList.toggle('account-present',!!label);
+}
+function profile(){$('account-info').textContent=company()?company().name+' · '+company().boundary:'';if(company()&&WithUAuth.user?.role==='company')activeCompanyName=company().name;headerAccount();}
 function navigate(page,{scroll=true}={}){
   const isCompany=WithUAuth.user?.role==='company';
   page=isCompany?(['dashboard','credits','reports','data'].includes(page)?page:'dashboard'):'home';
@@ -162,16 +167,17 @@ $('restore-company').onchange=handle(async event=>{try{const file=event.target.f
 let authEpoch=0,activeAccount=null;
 function emptyStore(){return {version:1,companies:[],selectedCompany:'',selectedDevice:'',devices:[],start:now.slice(0,4)+'-01-01',end:now,revisions:{}};}
 function accountView(user){
+ headerAccount();
  const isCompany=user?.role==='company';$('company-content').hidden=!isCompany;document.querySelector('.workspace-bar').hidden=!isCompany;$('auth-required').hidden=isCompany;
  $('workspace-nav').hidden=!isCompany;$('report-export').hidden=!isCompany;document.querySelector('.menu-toggle').hidden=!isCompany;$('account-login').hidden=!!user;$('account-logout').hidden=!isCompany;
  document.querySelector('.account-footer').hidden=!user;$('session-label').textContent=user?user.username+' · '+(isCompany?'기업 계정':'관리자'):'';
 }
 async function initializeAccount(){
- const epoch=++authEpoch,oldAccount=activeAccount,previousPage=document.querySelector('.page.active')?.id||'home';reading=null;sensorEpoch++;viewedReport=null;store=emptyStore();storedRaw=null;storageBlocked=false;accountView(WithUAuth.user);navigate(previousPage,{scroll:false});$('company-content').hidden=true;profile();render();
+ const epoch=++authEpoch,oldAccount=activeAccount,previousPage=document.querySelector('.page.active')?.id||'home';if(oldAccount!==WithUAuth.user?.id||WithUAuth.user?.role!=='company')activeCompanyName='';reading=null;sensorEpoch++;viewedReport=null;store=emptyStore();storedRaw=null;storageBlocked=false;accountView(WithUAuth.user);navigate(previousPage,{scroll:false});$('company-content').hidden=true;profile();render();
  try{const result=await WithUAuth.check();if(epoch!==authEpoch)return;const user=result.user;
   if(oldAccount&&oldAccount!==user?.id)sessionStorage.removeItem('withu-company-'+oldAccount);
   activeAccount=user?.id||null;STORE='withu-company-'+(activeAccount||'guest');storedRaw=sessionStorage.getItem(STORE);
-  const isCompany=user?.role==='company';accountView(user);if(user?.role==='admin'){location.href='admin.html';return;}
+  const isCompany=user?.role==='company';activeCompanyName=isCompany?result.profile?.name||activeCompanyName:'';accountView(user);if(user?.role==='admin'){location.href='admin.html';return;}
   navigate(previousPage==='home'?location.hash.slice(1):previousPage,{scroll:false});
   if(!isCompany){profile();render();return;}
   const [workspace,links]=await Promise.all([api('/api/company-workspace'),api('/api/company-devices')]);if(epoch!==authEpoch||WithUAuth.user?.id!==user.id)return;
