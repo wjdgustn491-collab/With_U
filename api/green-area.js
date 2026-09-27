@@ -1,7 +1,9 @@
 'use strict';
+const A=require('../server/access');
 module.exports=async function handler(req,res){
-  res.setHeader('Cache-Control','public, s-maxage=3600, stale-while-revalidate=86400');
+  res.setHeader('Cache-Control','no-store');
   if(req.method!=='GET')return res.status(405).json({error:'GET 요청만 지원합니다.'});
+  try{await A.admin(req);}catch(e){return A.finishError(res,e);}
   const lat=Number(req.query?.lat),lon=Number(req.query?.lon);
   if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>85||Math.abs(lon)>180)
     return res.status(400).json({error:'유효한 위도·경도가 필요합니다.'});
@@ -30,4 +32,3 @@ module.exports=async function handler(req,res){
     return res.status(200).json({elements});
   }catch(error){console.error('OSM map query failed:',error.message);return res.status(502).json({error:'녹지 지도 자료 조회에 실패했습니다. 잠시 후 다시 시도하세요.'});}
 };
-

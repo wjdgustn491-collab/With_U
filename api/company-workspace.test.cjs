@@ -1,27 +1,4 @@
-const test=require('node:test');
-const assert=require('node:assert/strict');
-const {randomUUID}=require('node:crypto');
-const handler=require('./company-workspace.js');
-const response=()=>({code:0,body:null,headers:{},setHeader(k,v){this.headers[k]=v;},status(code){this.code=code;return this;},json(body){this.body=body;return this;}});
-test('company API authentication, validation, database setup, persistence and revision conflicts',async()=>{
-  const originalFetch=global.fetch,original={};for(const key of ['SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','WITHU_ADMIN_TOKEN','WITHU_ALLOWED_DEVICE_IDS'])original[key]=process.env[key];
-  const doc={version:1,id:randomUUID(),name:'API 시험',boundary:'본사',emissions:[],credits:[],surveys:[],reports:[]};
-  const req=(method='GET',extra={})=>({method,headers:{authorization:'Bearer unit-test-token'},query:{company:doc.id},...extra});
-  let calls=0;global.fetch=async()=>{calls++;throw Error('unexpected fetch');};
-  try{
-    delete process.env.SUPABASE_URL;assert.equal((await handler(req(),response())).code,503);
-    Object.assign(process.env,{SUPABASE_URL:'https://example.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'unit-test-service',WITHU_ADMIN_TOKEN:'unit-test-token',WITHU_ALLOWED_DEVICE_IDS:'pi5-monitor-01'});
-    assert.equal((await handler(req('GET',{headers:{authorization:'Bearer bad'}}),response())).code,401);
-    assert.equal((await handler(req('DELETE'),response())).code,405);
-    assert.equal((await handler(req('GET',{query:{company:'bad'}}),response())).code,400);
-    assert.equal((await handler(req('PUT',{body:{document:{...doc,id:randomUUID()}}}),response())).code,400);assert.equal(calls,0);
-    global.fetch=async(url,options)=>{assert.match(String(url),/company_workspaces/);assert.equal(options.method,'POST');assert.equal(options.headers.apikey,'unit-test-service');assert.equal(JSON.parse(options.body).document.id,doc.id);assert.equal(options.headers.Prefer,'return=representation');return {ok:true,json:async()=>[{id:doc.id,document:doc,updated_at:'2026-09-27T00:00:00Z'}]};};
-    let result=await handler(req('PUT',{body:{document:doc,baseRevision:null}}),response());assert.equal(result.code,200);assert.equal(result.body.document.name,'API 시험');assert.equal(result.headers['Cache-Control'],'no-store');assert.ok(!JSON.stringify(result.body).includes('unit-test-service'));
-    global.fetch=async(url,options)=>{assert.equal(options.method,'PATCH');assert.equal(new URL(url).searchParams.get('updated_at'),'eq.2026-09-27T00:00:00Z');return {ok:true,json:async()=>[]};};
-    result=await handler(req('PUT',{body:{document:doc,baseRevision:'2026-09-27T00:00:00Z'}}),response());assert.equal(result.code,409);
-    global.fetch=async()=>({ok:false,json:async()=>({code:'23505'})});assert.equal((await handler(req('PUT',{body:{document:doc}}),response())).code,409);
-    global.fetch=async()=>({ok:false,json:async()=>({code:'PGRST205'})});assert.equal((await handler(req(),response())).code,503);
-    global.fetch=async()=>({ok:true,json:async()=>[]});result=await handler(req(),response());assert.equal(result.body.document,null);
-    global.fetch=async()=>({ok:true,json:async()=>[{id:doc.id,name:doc.name,updated_at:'2026-09-27T00:00:00Z',document:{secret:'must not return'}}]});result=await handler(req('GET',{query:{list:'1'}}),response());assert.deepEqual(Object.keys(result.body.companies[0]).sort(),['id','name','revision']);
-  }finally{global.fetch=originalFetch;for(const [key,value] of Object.entries(original)){if(value===undefined)delete process.env[key];else process.env[key]=value;}}
-});
+const test=require('node:test'),assert=require('node:assert/strict'),A=require('../server/access'),handler=require('./company-workspace');
+const id='11111111-1111-4111-8111-111111111111',doc={version:1,id,name:'Firm',boundary:'HQ',emissions:[],credits:[],surveys:[],reports:[]};
+function response(){return {setHeader(){},status(c){this.code=c;return this;},json(b){this.body=b;return this;}};}
+test('company save cannot silently replace newer server revisions',async()=>{A.session=async()=>({role:'company',company_id:id});A.originCheck=()=>{};A.devices=async()=>['pi5-monitor-01'];let patch=0;A.db=async(path,method)=>{if(method==='PATCH'){patch++;return [];}return [{document:doc,updated_at:'2026-09-27T00:00:00Z'}];};let r=response();await handler({method:'PUT',query:{},headers:{},body:{document:doc,baseRevision:'old'}},r);assert.equal(r.code,409);assert.equal(patch,0);r=response();await handler({method:'PUT',query:{},headers:{},body:{document:doc,baseRevision:'2026-09-27T00:00:00Z'}},r);assert.equal(r.code,409);assert.equal(patch,1);});

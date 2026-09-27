@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="workspace.css">
   <script src="carbon-engine.js" defer></script>
   <script src="business-engine.js" defer></script>
+  <script src="auth-client.js" defer></script>
   <script src="workspace.js" defer></script>
 <style>.top-nav .admin-nav{font-size:14px;font-weight:700;padding:12px 8px;white-space:nowrap;color:#176b70}.top-nav .admin-nav:hover{text-decoration:underline}@media(max-width:820px){.top-nav .admin-nav{min-height:48px;padding:15px 3px}}</style></head>
 <body>
@@ -40,20 +41,13 @@
       <button type="button" data-page="credits" onclick="navigate('credits')">탄소배출권</button>
       <button type="button" data-page="reports" onclick="navigate('reports')">지속가능경영 리포트</button>
     <button type="button" data-page="data" onclick="navigate('data')">기업 데이터 입력</button>
-    <a class="admin-nav" href="admin.html">관리자 페이지</a></nav>
+    <button type="button" id="account-login">기업 로그인 / 회원가입</button><button type="button" id="account-logout" hidden>로그아웃</button></nav>
     <button class="header-cta" type="button" onclick="openReportExport()">리포트 내보내기 ↗</button>
     <button class="menu-toggle" type="button" aria-label="메뉴 열기" aria-expanded="false" onclick="toggleMenu()">☰</button>
   </header>
 
   <main>
-    <section class="workspace-bar" aria-label="기업과 데이터 선택">
-      <label>기업<select id="company-select"><option value="">기업 등록 필요</option></select></label>
-      <label>측정 장치<select id="workspace-device"><option value="">선택 안 함 · 예시 데이터</option></select></label>
-      <label>보고 시작일<input id="period-start" type="date" required></label>
-      <label>보고 종료일<input id="period-end" type="date" required></label>
-      <div class="workspace-wide workspace-actions"><button type="button" onclick="navigate('data')">기업·탄소 데이터 등록</button><button type="button" id="refresh-device">선택 장치 센서 조회</button><span id="device-connection">운영자 연결 전</span></div>
-      <p class="workspace-wide mode-banner" id="data-mode" role="status"></p>
-    </section>
+
     <p id="workspace-message" class="workspace-notice" role="status" aria-live="polite"></p>
     <section class="page active" id="dashboard" aria-labelledby="dashboard-title">
       <section class="activity-intro" aria-labelledby="activity-title">
@@ -70,7 +64,7 @@
         <article class="metric"><div class="metric-label"><span>소각 등록 크레딧</span><span class="metric-icon">✓</span></div><div class="metric-value"><span data-value="retired">—</span> <small>tCO₂e</small></div><p class="metric-note">선택 기간에 기업이 등록한 소각 기록</p></article>
       <article class="metric"><div class="metric-label"><span>수목 연평균 저장량 변화</span></div><div class="metric-value"><span data-value="annual">—</span> <small>tCO₂/년</small></div><p class="metric-note" id="tree-meta">현장 조사 자료 등록 필요</p></article>
       </div>
-      <section class="business-panel"><h2>선택 장치의 토양 환경</h2><p id="sensor-status">조회 전</p><div id="device-sensors" class="sensor-summary"></div><p>토양·녹지 면적의 탄소 산정은 현재 MVP 범위에 포함하지 않습니다.</p></section>
+      <section class="business-panel"><h2>선택 장치 주변 토양 환경</h2><p id="sensor-status">조회 전</p><label class="soil-device-label">연결 장치 선택<select id="soil-device"></select></label><div id="device-sensors" class="sensor-summary"></div><p>토양·녹지 면적의 탄소 산정은 현재 MVP 범위에 포함하지 않습니다.</p></section>
       <div class="dashboard-actions">
         <article class="action-panel"><div><span class="eyebrow">CREDIT BALANCE</span><h2>현재 사용 가능한<br>크레딧을 확인하세요.</h2><p>보유, 소각 등록, 이전 완료 수량을 구분해서 봅니다.</p></div><button class="action-link" type="button" onclick="navigate('credits')">탄소배출권 보기 →</button></article>
         <article class="summary-card"><h2>보고서 준비 상태</h2><ul class="summary-list"><li><span>배출 자료</span><b id="emission-count">—</b></li><li><span>보고 범위</span><b id="company-boundary">—</b></li><li><span>내보내기 형식</span><b>DOC · CSV · PDF</b></li></ul><button class="action-link" style="margin-top:13px;background:#12382c;color:#fff" type="button" onclick="navigate('reports')">리포트 열기 →</button></article>
@@ -108,13 +102,17 @@
       <section class="business-panel" id="report-history"><h2>저장한 보고서</h2><button type="button" class="row-action" id="live-report">현재 자료로 보기</button><div id="report-list" class="report-list"></div></section>
     </section>
     <section class="page" id="data" aria-labelledby="data-title">
+    <section class="workspace-bar" aria-label="기업과 데이터 선택">
+      <label>기업<select id="company-select" disabled><option value="">로그인한 기업</option></select></label>
+      <label>측정 장치<select id="workspace-device"><option value="">선택 안 함 · 예시 데이터</option></select></label>
+      <label>보고 시작일<input id="period-start" type="date" required></label>
+      <label>보고 종료일<input id="period-end" type="date" required></label>
+      <div class="workspace-wide workspace-actions"><button type="button" onclick="navigate('data')">기업·탄소 데이터 등록</button><button type="button" id="refresh-device">선택 장치 센서 조회</button><span id="device-connection">기업 로그인 전</span></div>
+      <p class="workspace-wide mode-banner" id="data-mode" role="status"></p>
+    </section>
+<p id="account-info"></p><div id="auth-required" class="business-panel"><h2>기업 로그인</h2><p>회원가입 시 기업명과 사업장·보고 경계를 등록합니다. 로그인 후 탄소 자료를 입력할 수 있습니다.</p><button type="button" onclick="WithUAuth.open()">로그인 / 회원가입</button></div><div id="company-content" hidden>
       <div class="intro"><div><span class="eyebrow">COMPANY DATA</span><h1 id="data-title">기업 탄소 데이터 입력</h1><p>실제 배출 자료와 크레딧 기록을 등록하고 대시보드·보고서에서 확인합니다.</p></div></div>
-      <section class="business-panel"><h2>기업·사업장 정보</h2>
-        <form id="company-form" class="business-form"><label>기업명<input name="name" maxlength="120" required></label><label>사업장·보고 경계<input name="boundary" maxlength="500" placeholder="예: 서울 본사 및 제1공장" required></label><div class="workspace-wide workspace-actions"><button class="primary" type="submit">기업 정보 저장</button><button type="button" id="new-company">새 기업 등록</button></div></form>
-      </section>
-      <section class="business-panel"><h2>저장 및 장치 연결</h2><p>입력 자료는 이 브라우저에 저장됩니다. 운영자 연결 후 서버에도 저장할 수 있습니다. 현재 MVP의 서버 접근은 운영자 토큰을 사용합니다.</p>
-        <div class="business-form"><label>운영자 연결 토큰<input id="workspace-token" type="password" autocomplete="off" placeholder="기존 관리자 조회 토큰"></label><div class="workspace-actions"><button type="button" id="connect-server">등록 장치·기업 조회</button></div><label>서버에 저장된 기업<select id="server-company"><option value="">서버 조회 전</option></select></label><div class="workspace-actions"><button type="button" id="load-server">서버 기업 불러오기</button><button type="button" id="save-server">현재 기업 서버 저장</button></div></div><p id="storage-status">브라우저 저장 · 서버 미연결</p>
-      </section>
+      <section class="business-panel"><h2>기업 자료 저장</h2><p>장치는 관리자가 기업에 연결합니다. 수정 자료와 보고서는 서버 저장 버튼으로 이 기업 계정에 저장하세요.</p><div class="workspace-actions"><button type="button" id="load-server">서버 자료 다시 불러오기</button><button type="button" id="save-server">기업 자료 서버 저장</button><button type="button" id="connect-server">연결 장치 새로고침</button></div><p id="storage-status">서버 조회 전</p></section>
       <section class="business-panel"><h2>탄소 배출 자료 등록</h2><p>귀속일이 선택 기간에 해당하는 기록을 합산합니다. 사용량 방식은 활동량 × 계수(kgCO₂e/단위) ÷ 1,000입니다. 적용한 계수의 출처·연도를 직접 기록하세요.</p>
         <form id="emission-form" class="business-form">
           <label>귀속일<input name="date" type="date" required></label><label>배출 범위<select name="scope"><option value="1">Scope 1 · 직접 배출</option><option value="2">Scope 2 · 구매 전력·열 등</option><option value="3">Scope 3 · 기타 간접 배출</option></select></label>
@@ -128,10 +126,11 @@
       <section class="business-panel"><h2>크레딧 기록 등록</h2><p>입고·소각·이전 기록을 같은 등록부와 일련번호로 연결합니다. 입력한 자료는 자동 발행·외부 검증된 크레딧을 의미하지 않습니다.</p>
         <form id="credit-form" class="business-form"><label>기록일<input name="date" type="date" required></label><label>구분<select name="action"><option value="purchase">입고</option><option value="retire">소각</option><option value="transfer">이전</option></select></label><label>등록부·발행기관<input name="registry" maxlength="120" required></label><label>동일 크레딧의 일련번호<input name="serial" maxlength="160" required></label><label>수량 (tCO₂e)<input name="quantity" type="number" min="0.000001" max="1000000000" step="any" required></label><label>근거자료 참조<input name="evidence" maxlength="500" placeholder="거래·소각 증빙 번호 또는 자료명" required></label><div class="workspace-wide workspace-actions"><button class="primary" type="submit">크레딧 기록 저장</button><button type="button" id="reset-credit">입력 초기화</button></div></form><div id="credit-records" class="business-table"></div>
       </section>
-      <section class="business-panel"><h2>수목 조사 자료 연결</h2><p>관리자 화면에서 해당 장치의 실제 현장 조사 자료로 저장한 수목 입력을 가져옵니다. 기존 수목 저장량 계산식을 유지하며, 토양·녹지 면적 보정은 적용하지 않습니다.</p><div class="workspace-actions"><a class="row-action" href="admin.html">녹지 관리자 열기 ↗</a><button type="button" id="import-survey">선택 장치의 수목 조사 가져오기</button></div><div id="survey-records" class="business-table"></div></section>
-      <section class="business-panel"><h2>자료 백업</h2><p>현재 기업의 입력 기록과 저장한 보고서를 JSON 파일로 보관·복원합니다. 연결 토큰은 저장 파일에 포함되지 않습니다.</p><div class="workspace-actions"><button type="button" id="backup-company">기업 자료 내려받기</button><label class="row-action">기업 자료 파일 가져오기<input id="restore-company" type="file" accept="application/json,.json"></label></div></section>
-    </section>
+      <section class="business-panel"><h2>관리자 등록 수목 조사 자료</h2><p>관리자가 이 기업의 연결 장치에 등록한 현장 조사 자료입니다. 기업은 조회할 수 있으며 수목 입력과 장치 관리는 관리자 화면에서 진행합니다.</p><div id="survey-records" class="business-table"></div></section>
+      <section class="business-panel"><h2>자료 백업</h2><p>현재 기업의 입력 기록과 저장한 보고서를 JSON 파일로 보관·복원합니다. 회원 비밀번호는 저장 파일에 포함되지 않습니다.</p><div class="workspace-actions"><button type="button" id="backup-company">기업 자료 내려받기</button><label class="row-action">기업 자료 파일 가져오기<input id="restore-company" type="file" accept="application/json,.json"></label></div></section>
+    </div></section>
   </main>
+<footer class="account-footer"><span id="session-label">예시 화면</span><button type="button" id="admin-login">관리자 로그인</button></footer>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 </body>

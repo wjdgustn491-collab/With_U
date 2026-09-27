@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');
-const handler=require('./admin-location.js');
+const handler=require('./admin-location.js');const A=require('../server/access');A.admin=async(req)=>{if(req.headers.authorization!=='Bearer test-admin')throw A.fail(401,'Login required');return {role:'admin'};};A.originCheck=()=>{};
 function response(){return {code:0,body:null,setHeader(){},status(code){this.code=code;return this;},json(body){this.body=body;return this;}};}
 async function run(){
   const old={...process.env};
@@ -25,4 +25,3 @@ async function run(){
   console.log('PASS: location API setup, auth, coordinate validation and server upsert');
 }
 run().catch(error=>{console.error(error);process.exitCode=1;});
-

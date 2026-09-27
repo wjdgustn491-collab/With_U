@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');
-const handler=require('./green-area.js');
+const handler=require('./green-area.js');require('../server/access').admin=async()=>({role:'admin'});
 function response(){return {code:0,body:null,setHeader(){},status(code){this.code=code;return this;},json(body){this.body=body;return this;}};}
 (async()=>{
   assert.equal((await handler({method:'POST',query:{}},response())).code,405);
@@ -9,4 +9,3 @@ function response(){return {code:0,body:null,setHeader(){},status(code){this.cod
   finally{global.fetch=prior;}
   console.log('PASS: green-area API method, coordinates and OSM map filtering');
 })().catch(error=>{console.error(error);process.exitCode=1;});
-

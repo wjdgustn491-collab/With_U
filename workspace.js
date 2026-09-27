@@ -1,6 +1,7 @@
 'use strict';
 const B=BusinessEngine,E=CarbonEngine,$=id=>document.getElementById(id);
-const STORE='withu-business-v1',format=v=>v==null?'미입력':Number(v).toLocaleString('ko-KR',{maximumFractionDigits:3});
+let STORE='withu-company-guest';
+const format=v=>v==null?'미입력':Number(v).toLocaleString('ko-KR',{maximumFractionDigits:3});
 const actionNames={purchase:'입고',retire:'소각',transfer:'이전'};
 const uuid=()=>crypto.randomUUID();
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
@@ -10,17 +11,18 @@ let reading=null,sensorStatus='장치를 선택하고 조회하세요.',serverCo
 function notify(message){const el=$('toast');el.textContent=message;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2600);}
 function message(text,error=false){$('workspace-message').textContent=text;$('workspace-message').classList.toggle('error',error);notify(text);}
 function handle(fn){return (...args)=>{try{Promise.resolve(fn(...args)).catch(e=>message(e.message,true));}catch(e){message(e.message,true);}};}
-function write(next){if(storageBlocked)throw Error('기존 저장 자료를 먼저 백업·복구하세요.');if(localStorage.getItem(STORE)!==storedRaw)throw Error('다른 창에서 저장 자료가 변경되었습니다. 백업 후 새로고침하세요.');const raw=JSON.stringify(next);localStorage.setItem(STORE,raw);storedRaw=raw;store=next;}
+function write(next){if(storageBlocked)throw Error('기존 저장 자료를 먼저 백업·복구하세요.');if(sessionStorage.getItem(STORE)!==storedRaw)throw Error('다른 창에서 저장 자료가 변경되었습니다. 백업 후 새로고침하세요.');const raw=JSON.stringify(next);sessionStorage.setItem(STORE,raw);storedRaw=raw;store=next;}
 function company(){return store.companies.find(w=>w.id===store.selectedCompany)||null;}
-function actual(){return !!store.selectedDevice&&store.devices.some(d=>d.id===store.selectedDevice);}
-function requireCompany(){const w=company();if(!w)throw Error('기업·사업장 정보를 먼저 등록하세요.');return w;}
-function commit(w,extra={}){const validated=B.workspace(w);const changed=store.selectedCompany!==validated.id;const companies=store.companies.filter(c=>c.id!==validated.id);companies.push(validated);if(companies.length>20)throw Error('이 브라우저의 기업은 최대 20개까지 등록할 수 있습니다.');write({...store,companies,selectedCompany:validated.id,selectedDevice:changed?'':store.selectedDevice,...extra});if(changed){reading=null;sensorEpoch++;resetEmission();resetCredit();}viewedReport=null;render();$('storage-status').textContent='브라우저 저장 완료 · 서버 반영은 별도 저장';}
+function actual(){return WithUAuth.user?.role==='company'&&!!store.selectedDevice&&store.devices.some(d=>d.id===store.selectedDevice);}
+function requireCompany(){if(WithUAuth.user?.role!=='company')throw Error('기업 계정으로 로그인하세요.');const w=company();if(!w)throw Error('기업·사업장 정보를 먼저 등록하세요.');return w;}
+function commit(w,extra={}){const validated=B.workspace(w);if(validated.id!==WithUAuth.user?.company_id)throw Error('로그인한 기업의 자료만 저장할 수 있습니다.');const changed=store.selectedCompany!==validated.id;const companies=store.companies.filter(c=>c.id!==validated.id);companies.push(validated);if(companies.length>20)throw Error('이 브라우저의 기업은 최대 20개까지 등록할 수 있습니다.');write({...store,companies,selectedCompany:validated.id,selectedDevice:changed?'':store.selectedDevice,...extra});if(changed){reading=null;sensorEpoch++;resetEmission();resetCredit();}viewedReport=null;render();$('storage-status').textContent='브라우저 저장 완료 · 서버 반영은 별도 저장';}
 function option(value,label){const el=document.createElement('option');el.value=value;el.textContent=label;return el;}
 function fillSelectors(){
-  $('company-select').replaceChildren(option('','기업 등록 필요'),...store.companies.map(w=>option(w.id,w.name)));$('company-select').value=store.selectedCompany;
+  $('company-select').replaceChildren(...(store.companies.length?store.companies.map(w=>option(w.id,w.name)):[option('','기업 로그인 필요')]));$('company-select').value=store.selectedCompany;
   $('workspace-device').replaceChildren(option('','선택 안 함 · 예시 데이터'),...store.devices.map(d=>option(d.id,d.id)));$('workspace-device').value=store.selectedDevice;
+  $('soil-device').replaceChildren(option('','선택 안 함 · 예시 환경'),...store.devices.map(d=>option(d.id,d.id)));$('soil-device').value=store.selectedDevice;
 }
-function profile(){const w=company(),f=$('company-form');editingCompany=w?.id||null;f.elements.name.value=w?.name||'';f.elements.boundary.value=w?.boundary||'';}
+function profile(){$('account-info').textContent=company()?company().name+' · '+company().boundary:'';}
 function navigate(page){
   document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id===page));
   document.querySelectorAll('[data-page]').forEach(el=>el.classList.toggle('active',el.dataset.page===page));
@@ -48,7 +50,7 @@ function renderRecords(){
   table($('emission-records'),['귀속일','범위','배출원','배출량 (tCO₂e)','근거','관리'],(w?.emissions||[]).map(r=>[r.date,'Scope '+r.scope,r.source,format(r.amount),r.evidence,actions(()=>editEmission(r),()=>mutateCollection('emissions',rows=>rows.filter(v=>v.id!==r.id)))]));
   const creditRows=(w?.credits||[]).map(r=>[r.date,actionNames[r.action],r.registry+' / '+r.serial,format(r.quantity),r.evidence,actions(()=>editCredit(r),()=>mutateCollection('credits',rows=>rows.filter(v=>v.id!==r.id)))]);
   table($('credit-records'),['기록일','구분','등록부·일련번호','tCO₂e','근거','관리'],creditRows);
-  table($('survey-records'),['장치','기준 조사','현재 조사','수종 그룹','관리'],(w?.surveys||[]).map(r=>[r.device,...r.dates,r.groups.length,actions(null,()=>mutateCollection('surveys',rows=>rows.filter(v=>v!==r)))]));
+  table($('survey-records'),['장치','기준 조사','현재 조사','수종 그룹','관리'],(w?.surveys||[]).map(r=>[r.device,...r.dates,r.groups.length,'관리자 등록']));
   if(actual())table($('credit-ledger'),['기록일','구분','등록부·일련번호','tCO₂e','근거'],(w?.credits||[]).filter(r=>r.date<=store.end).map(r=>[r.date,actionNames[r.action],r.registry+' / '+r.serial,format(r.quantity),r.evidence]));
   else{$('credit-ledger').replaceChildren();const p=document.createElement('p');p.className='empty';p.textContent='예시 현황입니다. 실제 크레딧 기록은 기업 데이터 입력에서 등록하세요.';$('credit-ledger').append(p);}
 }
@@ -116,79 +118,62 @@ function resetEmission(){editingEmission=null;$('emission-form').reset();$('emis
 function resetCredit(){editingCredit=null;$('credit-form').reset();$('credit-form').elements.date.value=today();}
 function editEmission(r){editingEmission=r.id;for(const [key,value] of Object.entries(r))if($('emission-form').elements[key])$('emission-form').elements[key].value=value;toggleEmissionFields();$('emission-form').scrollIntoView({behavior:'smooth'});}
 function editCredit(r){editingCredit=r.id;for(const [key,value] of Object.entries(r))if($('credit-form').elements[key])$('credit-form').elements[key].value=value;$('credit-form').scrollIntoView({behavior:'smooth'});}
-async function api(path,method='GET',body,token=$('workspace-token').value.trim()){
-  if(!token)throw Error('기업 데이터 입력의 운영자 연결 토큰을 입력하세요.');
-  const response=await fetch(path,{method,headers:{Authorization:'Bearer '+token,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,cache:'no-store'});
-  const payload=await response.json().catch(()=>({}));if(!response.ok)throw Error(payload.error||'서버 요청 실패 ('+response.status+')');return payload;
-}
+async function api(path,method='GET',body){return WithUAuth.request(path,method,body);}
 async function connect(){
-  const token=$('workspace-token').value.trim();if(!token)throw Error('운영자 연결 토큰을 입력하세요.');
-  const button=$('connect-server');button.disabled=true;
-  try{
-    const results=await Promise.allSettled([api('/api/admin-location?list=1','GET',undefined,token),api('/api/company-workspace?list=1','GET',undefined,token)]);
-    if(token!==$('workspace-token').value.trim())return;
-    const notices=[];
-    if(results[0].status==='fulfilled'){
-      const devices=results[0].value.devices;if(!Array.isArray(devices))throw Error('등록 장치 목록이 올바르지 않습니다.');
-      const ids=[...new Set(devices.map(d=>B.device(d.id)))];const selected=ids.includes(store.selectedDevice)?store.selectedDevice:'';
-      write({...store,devices:ids.map(id=>({id})),selectedDevice:selected});reading=null;sensorStatus='장치 조회 전';
-      $('device-connection').textContent=ids.length?`${ids.length}개 등록 장치 · 서버 확인`:'등록된 장치 없음 · 예시 모드';notices.push('장치 목록을 확인했습니다.');
-    }else notices.push('장치 조회: '+results[0].reason.message);
-    if(results[1].status==='fulfilled'){
-      if(!Array.isArray(results[1].value.companies))throw Error('기업 목록이 올바르지 않습니다.');
-      serverCompanies=results[1].value.companies.map(w=>({id:B.id(w.id),name:String(w.name)}));$('server-company').replaceChildren(option('','기업 선택'),...serverCompanies.map(w=>option(w.id,w.name)));notices.push('서버 기업 목록을 확인했습니다.');
-    }else notices.push('기업 조회: '+results[1].reason.message);
-    render();message(notices.join(' '),results.some(r=>r.status==='rejected'));if(actual()&&results[0].status==='fulfilled')await refreshSensor();
-  }finally{button.disabled=false;}
+ requireCompany();const actor=WithUAuth.user.id,button=$('connect-server');button.disabled=true;
+ try{const payload=await api('/api/company-devices');if(WithUAuth.user?.id!==actor)return;const ids=payload.devices.map(d=>B.device(d.id));write({...store,devices:ids.map(id=>({id})),selectedDevice:ids.includes(store.selectedDevice)?store.selectedDevice:''});reading=null;sensorEpoch++;$('device-connection').textContent=ids.length?`${ids.length}개 연결 장치`:'연결 장치 없음';render();message('관리자가 연결한 장치 목록을 확인했습니다.');if(actual())await refreshSensor();}finally{button.disabled=false;}
 }
 async function refreshSensor(){
-  if(!actual())throw Error('등록된 측정 장치를 선택하세요.');const epoch=++sensorEpoch,selected=store.selectedDevice,token=$('workspace-token').value.trim();reading=null;sensorStatus='실제 장치 기록 조회 중';renderSensors();
+  if(!actual())throw Error('등록된 측정 장치를 선택하세요.');const epoch=++sensorEpoch,selected=store.selectedDevice,actor=WithUAuth.user.id;reading=null;sensorStatus='실제 장치 기록 조회 중';renderSensors();
   try{
-    const payload=await api('/api/admin-readings?device='+encodeURIComponent(selected),'GET',undefined,token);
-    if(epoch!==sensorEpoch||selected!==store.selectedDevice||token!==$('workspace-token').value.trim())return;
+    const payload=await api('/api/admin-readings?device='+encodeURIComponent(selected),'GET');
+    if(epoch!==sensorEpoch||selected!==store.selectedDevice||actor!==WithUAuth.user?.id)return;
     if(!Array.isArray(payload.records))throw Error('장치 기록 형식이 올바르지 않습니다.');
     const records=payload.records.map(E.sensor).filter(r=>r.device_id===selected&&r.source==='hardware').sort((a,b)=>Date.parse(b.timestamp)-Date.parse(a.timestamp));reading=records[0]||null;
     sensorStatus=reading?`실제 장치 측정 · ${new Date(reading.timestamp).toLocaleString('ko-KR')} · ${selected}`:'실제 장치 측정 기록이 없습니다. 시뮬레이션 기록은 사용하지 않습니다.';
-  }catch(e){if(epoch!==sensorEpoch||selected!==store.selectedDevice||token!==$('workspace-token').value.trim())return;reading=null;sensorStatus='조회 실패 · '+e.message;message(sensorStatus,true);}
+  }catch(e){if(epoch!==sensorEpoch||selected!==store.selectedDevice||actor!==WithUAuth.user?.id)return;reading=null;sensorStatus='조회 실패 · '+e.message;message(sensorStatus,true);}
   renderSensors();renderReport();
 }
 async function saveServer(){
   const w=requireCompany(),payload=await api('/api/company-workspace?company='+w.id,'PUT',{document:w,baseRevision:store.revisions[w.id]||null});
   // Keep edits made during the request; only update the revision of the confirmed server snapshot.
-  write({...store,revisions:{...store.revisions,[w.id]:payload.revision}});$('storage-status').textContent='서버 저장 완료 · '+new Date().toLocaleString('ko-KR')+' · 이후 수정은 다시 서버 저장하세요.';message('기업 입력 자료와 저장 보고서를 서버에 저장했습니다.');
+  if(WithUAuth.user?.company_id!==w.id)return;write({...store,revisions:{...store.revisions,[w.id]:payload.revision}});$('storage-status').textContent='서버 저장 완료 · '+new Date().toLocaleString('ko-KR')+' · 이후 수정은 다시 서버 저장하세요.';message('기업 입력 자료와 저장 보고서를 서버에 저장했습니다.');
 }
 async function loadServer(){
-  const id=$('server-company').value;if(!id)throw Error('불러올 서버 기업을 선택하세요.');
+  const id=WithUAuth.user?.company_id;if(!id)throw Error('기업 계정으로 로그인하세요.');
   const payload=await api('/api/company-workspace?company='+id);if(!payload.document)throw Error('서버에 기업 자료가 없습니다.');
-  const w=B.workspace(payload.document),existing=store.companies.find(v=>v.id===w.id);
+  if(WithUAuth.user?.company_id!==id)return;const w=B.workspace(payload.document),existing=store.companies.find(v=>v.id===w.id);
   if(existing&&JSON.stringify(existing)!==JSON.stringify(w)&&!window.confirm('이 기업의 브라우저 자료를 서버 자료로 바꿉니다. 필요한 자료를 먼저 백업했나요?'))return;
-  commit(w,{revisions:{...store.revisions,[w.id]:payload.revision},selectedDevice:''});reading=null;viewedReport=null;resetEmission();resetCredit();profile();render();$('storage-status').textContent='서버 자료 불러옴 · '+new Date(payload.revision).toLocaleString('ko-KR');message('서버 기업 자료를 불러왔습니다. 장치를 선택하면 실제 자료가 표시됩니다.');
+  commit(w,{revisions:{...store.revisions,[w.id]:payload.revision},selectedDevice:store.selectedDevice});reading=null;viewedReport=null;resetEmission();resetCredit();profile();render();$('storage-status').textContent='서버 자료 불러옴 · '+new Date(payload.revision).toLocaleString('ko-KR');message('서버 기업 자료를 불러왔습니다. 장치를 선택하면 실제 자료가 표시됩니다.');
 }
-$('company-form').onsubmit=handle(event=>{
-  event.preventDefault();const data=formObject(event.target),existing=store.companies.find(w=>w.id===editingCompany);
-  const w=existing||{version:1,id:uuid(),emissions:[],credits:[],surveys:[],reports:[]};commit({...w,name:data.name,boundary:data.boundary});profile();message('기업·사업장 정보를 이 브라우저에 저장했습니다.');
-});
-$('new-company').onclick=()=>{editingCompany=null;$('company-form').reset();$('company-form').elements.name.focus();};
-$('company-select').onchange=handle(()=>{write({...store,selectedCompany:$('company-select').value,selectedDevice:''});reading=null;sensorEpoch++;viewedReport=null;profile();resetEmission();resetCredit();$('storage-status').textContent='브라우저 저장 · 서버 저장은 별도 실행';render();});
-$('workspace-device').onchange=handle(()=>{write({...store,selectedDevice:$('workspace-device').value});reading=null;sensorEpoch++;viewedReport=null;sensorStatus='실제 장치 기록 조회 전';render();if(actual()&&$('workspace-token').value.trim())return refreshSensor();});
+function chooseDevice(value){if(value&&!store.devices.some(d=>d.id===value))throw Error('기업에 연결된 장치를 선택하세요.');write({...store,selectedDevice:value});reading=null;sensorEpoch++;viewedReport=null;sensorStatus='실제 장치 기록 조회 전';render();if(actual())return refreshSensor();}
+$('workspace-device').onchange=handle(()=>chooseDevice($('workspace-device').value));$('soil-device').onchange=handle(()=>chooseDevice($('soil-device').value));
 for(const id of ['period-start','period-end'])$(id).onchange=handle(()=>{const start=$('period-start').value,end=$('period-end').value;B.date(start);B.date(end);if(start>end)throw Error('보고 시작일은 종료일보다 늦을 수 없습니다.');write({...store,start,end});viewedReport=null;$('report-period').value='custom';render();});
 $('report-period').onchange=handle(()=>{const value=$('report-period').value;if(value==='custom'){viewedReport=null;renderReport();return;}const year=store.start.slice(0,4);let start,end;if(value==='annual'){start=year+'-01-01';end=year+'-12-31';}else{const q=Number(value.slice(1)),month=(q-1)*3+1;start=year+'-'+String(month).padStart(2,'0')+'-01';end=year+'-'+String(month+2).padStart(2,'0')+'-'+(q===1||q===4?'31':'30');}write({...store,start,end});viewedReport=null;render();});
 $('emission-form').onsubmit=handle(event=>{event.preventDefault();const w=requireCompany(),r=B.emission({...formObject(event.target),id:editingEmission||uuid()});commit({...w,emissions:[...w.emissions.filter(v=>v.id!==r.id),r]});resetEmission();message('실제 배출 기록을 저장했습니다. 선택 기간과 장치를 확인하세요.');});
 $('emission-method').onchange=toggleEmissionFields;$('emission-form').oninput=previewEmission;$('reset-emission').onclick=resetEmission;
 $('credit-form').onsubmit=handle(event=>{event.preventDefault();const w=requireCompany(),r=B.credit({...formObject(event.target),id:editingCredit||uuid()});commit({...w,credits:[...w.credits.filter(v=>v.id!==r.id),r]});resetCredit();message('크레딧 기록을 저장했습니다.');});$('reset-credit').onclick=resetCredit;
 $('connect-server').onclick=handle(connect);$('refresh-device').onclick=handle(refreshSensor);$('save-server').onclick=handle(saveServer);$('load-server').onclick=handle(loadServer);
-$('workspace-token').oninput=()=>{reading=null;sensorEpoch++;sensorStatus='연결 토큰 변경 · 재조회 필요';$('device-connection').textContent='등록 목록은 이전 조회 기준 · 재연결 필요';serverCompanies=[];$('server-company').replaceChildren(option('','서버 조회 전'));renderSensors();renderReport();};
-$('import-survey').onclick=handle(()=>{
-  const w=requireCompany();if(!actual())throw Error('수목 자료를 연결할 실제 장치를 먼저 선택하세요.');const raw=localStorage.getItem('withu-admin-v2');if(!raw)throw Error('이 브라우저에서 관리자 수목 자료를 먼저 저장하세요.');const r=B.survey(JSON.parse(raw));if(r.device!==store.selectedDevice)throw Error('관리자 자료의 장치와 선택한 장치가 다릅니다.');
-  commit({...w,surveys:[...w.surveys.filter(s=>!(s.device===r.device&&s.dates.join()===r.dates.join())),r]});message('현장 조사 자료를 기업에 연결했습니다. 보고 종료일 이전 조사가 반영됩니다.');
-});
 $('save-report').onclick=handle(()=>{const w=requireCompany();if(!actual())throw Error('실제 측정 장치를 선택한 뒤 보고서를 저장하세요.');const r=B.makeReport(w,store.start,store.end,store.selectedDevice,uuid(),new Date().toISOString(),reading||undefined);commit({...w,reports:[...w.reports,r]});viewedReport=r;renderReport();message('생성 당시 자료를 포함한 보고서를 이 브라우저에 저장했습니다.');});
 $('live-report').onclick=()=>{viewedReport=null;renderReport();};
-$('backup-company').onclick=handle(()=>{if(storageBlocked){downloadBlob(localStorage.getItem(STORE)||'','WITH_U_original_browser_data.json','application/json');return;}const w=requireCompany();downloadBlob(JSON.stringify(w,null,2),'WITH_U_company_'+w.id+'.json','application/json');});
-$('restore-company').onchange=handle(async event=>{try{const file=event.target.files[0];if(!file)return;if(file.size>2000000)throw Error('2 MB 이내의 기업 자료 파일을 선택하세요.');const w=B.workspace(JSON.parse(await file.text()));if(storageBlocked){if(!window.confirm('원본 브라우저 저장 자료를 백업한 뒤 가져온 기업 파일로 복구하시겠습니까?'))return;storageBlocked=false;storedRaw=localStorage.getItem(STORE);}if(store.companies.some(c=>c.id===w.id)&&!window.confirm('같은 기업의 브라우저 자료를 가져온 파일로 바꾸시겠습니까?'))return;commit(w,{selectedDevice:''});viewedReport=null;reading=null;profile();resetEmission();resetCredit();render();for(const id of ['company-form','emission-form','credit-form'])$(id).querySelector('button[type="submit"]').disabled=false;message('기업 자료 파일을 복원했습니다.');}finally{event.target.value='';}});
-try{
-  const saved=localStorage.getItem(STORE);storedRaw=saved;if(saved){const value=JSON.parse(saved);if(value.version!==1||!Array.isArray(value.companies)||value.companies.length>20)throw Error('기업 저장 형식을 확인하세요.');const companies=value.companies.map(B.workspace);if(new Set(companies.map(w=>w.id)).size!==companies.length)throw Error('기업 식별자가 중복되었습니다.');const devices=Array.isArray(value.devices)?value.devices.map(d=>({id:B.device(d.id)})):[];B.date(value.start);B.date(value.end);if(value.start>value.end)throw Error('저장된 보고 기간을 확인하세요.');store={...store,companies,devices,selectedCompany:companies.some(c=>c.id===value.selectedCompany)?value.selectedCompany:'',selectedDevice:devices.some(d=>d.id===value.selectedDevice)?value.selectedDevice:'',start:value.start,end:value.end,revisions:value.revisions&&typeof value.revisions==='object'?value.revisions:{}};}
-}catch(e){storageBlocked=true;message('브라우저 자료를 불러오지 못했습니다. 기존 저장본은 그대로 두었습니다. '+e.message,true);for(const id of ['company-form','emission-form','credit-form'])$(id).querySelector('button[type="submit"]').disabled=true;}
-profile();resetEmission();resetCredit();render();if(['data','reports','credits'].includes(location.hash.slice(1)))navigate(location.hash.slice(1));
-setInterval(()=>{if(actual()&&$('workspace-token').value.trim())refreshSensor();},21600000);
-window.addEventListener('storage',event=>{if(event.key===STORE&&event.newValue!==JSON.stringify(store))message('다른 창에서 기업 자료가 변경되었습니다. 현재 자료를 백업한 뒤 새로고침하세요.',true);});
+$('backup-company').onclick=handle(()=>{if(storageBlocked){downloadBlob(sessionStorage.getItem(STORE)||'','WITH_U_original_browser_data.json','application/json');return;}const w=requireCompany();downloadBlob(JSON.stringify(w,null,2),'WITH_U_company_'+w.id+'.json','application/json');});
+$('restore-company').onchange=handle(async event=>{try{const file=event.target.files[0];if(!file)return;if(file.size>2000000)throw Error('2 MB 이내의 기업 자료 파일을 선택하세요.');const w=B.workspace(JSON.parse(await file.text()));if(w.id!==WithUAuth.user?.company_id||w.name!==company()?.name||w.boundary!==company()?.boundary||JSON.stringify(w.surveys)!==JSON.stringify(company()?.surveys))throw Error('이 기업의 자료와 관리자가 등록한 현장 조사를 유지해야 합니다.');if(storageBlocked){if(!window.confirm('원본 브라우저 저장 자료를 백업한 뒤 가져온 기업 파일로 복구하시겠습니까?'))return;storageBlocked=false;storedRaw=sessionStorage.getItem(STORE);}if(store.companies.some(c=>c.id===w.id)&&!window.confirm('같은 기업의 브라우저 자료를 가져온 파일로 바꾸시겠습니까?'))return;commit(w,{selectedDevice:''});viewedReport=null;reading=null;profile();resetEmission();resetCredit();render();for(const id of ['emission-form','credit-form'])$(id).querySelector('button[type="submit"]').disabled=false;message('기업 자료 파일을 복원했습니다.');}finally{event.target.value='';}});
+let authEpoch=0,activeAccount=null;
+function emptyStore(){return {version:1,companies:[],selectedCompany:'',selectedDevice:'',devices:[],start:now.slice(0,4)+'-01-01',end:now,revisions:{}};}
+async function initializeAccount(){
+ const epoch=++authEpoch,oldAccount=activeAccount;reading=null;sensorEpoch++;viewedReport=null;store=emptyStore();storedRaw=null;storageBlocked=false;$('company-content').hidden=true;profile();render();
+ try{const result=await WithUAuth.check();if(epoch!==authEpoch)return;const user=result.user;
+  if(oldAccount&&oldAccount!==user?.id)sessionStorage.removeItem('withu-company-'+oldAccount);
+  activeAccount=user?.id||null;STORE='withu-company-'+(activeAccount||'guest');storedRaw=sessionStorage.getItem(STORE);
+  const isCompany=user?.role==='company';$('company-content').hidden=!isCompany;document.querySelector('.workspace-bar').hidden=!isCompany;$('auth-required').hidden=isCompany;$('account-login').hidden=!!user;$('account-logout').hidden=!user;$('session-label').textContent=user?user.username+' · '+(isCompany?'기업 계정':'관리자'):'예시 화면';$('admin-login').textContent=user?.role==='admin'?'관리자 화면':'관리자 로그인';
+  if(!isCompany){profile();render();return;}
+  const [workspace,links]=await Promise.all([api('/api/company-workspace'),api('/api/company-devices')]);if(epoch!==authEpoch||WithUAuth.user?.id!==user.id)return;
+  const w=B.workspace(workspace.document);store={...emptyStore(),companies:[w],selectedCompany:w.id,devices:links.devices.map(d=>({id:B.device(d.id)})),selectedDevice:links.devices[0]?.id||'',revisions:{[w.id]:workspace.revision}};
+  if(storedRaw){try{const draft=JSON.parse(storedRaw);if(draft.companies?.length===1&&draft.companies[0].id===w.id){const dw=B.workspace(draft.companies[0]);if(dw.name===w.name&&dw.boundary===w.boundary&&JSON.stringify(dw.surveys)===JSON.stringify(w.surveys)){store.companies=[dw];store.revisions=draft.revisions||store.revisions;if(store.devices.some(d=>d.id===draft.selectedDevice)||draft.selectedDevice==='')store.selectedDevice=draft.selectedDevice;B.date(draft.start);B.date(draft.end);if(draft.start<=draft.end){store.start=draft.start;store.end=draft.end;}}}}catch{message('이전 임시 자료를 불러올 수 없습니다. 서버 자료를 사용합니다.',true);}}
+  write(store);$('device-connection').textContent=store.devices.length?`${store.devices.length}개 연결 장치`:'관리자 장치 연결 대기';$('storage-status').textContent='기업 서버 자료 연결 완료 · 수정 후 서버 저장하세요.';profile();resetEmission();resetCredit();render();if(actual())await refreshSensor();
+ }catch(e){if(epoch!==authEpoch)return;message(e.message,true);render();}
+}
+$('account-login').onclick=()=>WithUAuth.open();$('admin-login').onclick=()=>{if(WithUAuth.user?.role==='admin')location.href='admin.html';else WithUAuth.open(true);};$('account-logout').onclick=handle(()=>WithUAuth.logout());
+window.addEventListener('withu-auth',initializeAccount);
+profile();resetEmission();resetCredit();render();initializeAccount();if(['data','reports','credits'].includes(location.hash.slice(1)))navigate(location.hash.slice(1));if(location.hash==='#admin-login')WithUAuth.open(true);
+setInterval(()=>{if(actual())handle(refreshSensor)();},21600000);
